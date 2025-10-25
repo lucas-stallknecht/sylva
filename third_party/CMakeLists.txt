@@ -5,8 +5,10 @@ set(DAXA_ENABLE_UTILS_MEM on)
 set(DAXA_ENABLE_UTILS_TASK_GRAPH on)
 FetchContent_Declare(
     daxa
-    GIT_REPOSITORY https://github.com/Ipotrick/Daxa
-    GIT_TAG        rework-build-system
+    # Temporaty
+    SOURCE_DIR "C:/Users/Administrator/Documents/Daxa"
+    # GIT_REPOSITORY https://github.com/Ipotrick/Daxa
+    # GIT_TAG        rework-build-system
 )
 
 FetchContent_Declare(

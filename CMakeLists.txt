@@ -13,7 +13,7 @@ add_compile_definitions(TEXTURES_DIR="${CMAKE_SOURCE_DIR}/resources/textures")
 
 # -- Own --
 file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.c??")
-add_executable(${PROJECT_NAME} "${SRC_DIR}/main.cpp")
+add_executable(${PROJECT_NAME} ${SRC_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
