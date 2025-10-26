@@ -12,12 +12,14 @@ DAXA_DECL_BUFFER_PTR(TerrainVertex)
 
 DAXA_DECL_RASTER_TASK_HEAD_BEGIN(TesselateTerrainH)
 DAXA_TH_BUFFER_PTR(VERTEX_SHADER::READ, daxa_BufferPtr(TerrainVertex), vertices)
-DAXA_TH_IMAGE_ID(RASTER_SHADER::READ, REGULAR_2D, height_map)
+DAXA_TH_IMAGE_ID(RASTER_SHADER::READ, REGULAR_2D, terrain_height_map)
+DAXA_TH_IMAGE_ID(FRAGMENT_SHADER::READ, REGULAR_2D, terrain_albedo_map)
 DAXA_TH_IMAGE(COLOR_ATTACHMENT, REGULAR_2D, dst_img)
 DAXA_DECL_TASK_HEAD_END
 
 struct TesselateTerrainPush
 {
     daxa_f32mat4x4 proj_view;
+    daxa_SamplerId linear_sampler;
     DAXA_TH_BLOB(TesselateTerrainH, attachments)
 };

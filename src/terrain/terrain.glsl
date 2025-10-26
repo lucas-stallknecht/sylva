@@ -2,7 +2,7 @@
 
 #extension GL_EXT_debug_printf : enable
 
-#include "tesselate_terrain.inl"
+#include "terrain.inl"
 
 DAXA_DECL_PUSH_CONSTANT(TesselateTerrainPush, push)
 
@@ -61,12 +61,11 @@ void main() {
             mix(tc_uv[2], tc_uv[3], u), v);
 
     // TODO(lstallknecht): add sampler
-    daxa_ImageViewId img = push.attachments.height_map;
-    ivec2 size = imageSize(daxa_image2D(img));
-    ivec2 tex_coords = ivec2(te_uv * vec2(size));
+    daxa_ImageViewId img = push.attachments.terrain_height_map;
+    daxa_SamplerId samp = push.linear_sampler;
 
-    float height = imageLoad(daxa_image2D(img), tex_coords).r;
-    pos.y = height * 0.8 - 0.2;
+    float height = texture(daxa_sampler2D(img, samp), te_uv).r;
+    pos.y = height - 0.3;
 
     // Now project to clip space
     gl_Position = push.proj_view * pos;
@@ -78,11 +77,11 @@ layout(location = 0) in vec2 te_uv;
 layout(location = 0) out vec4 color;
 void main()
 {
-    daxa_ImageViewId img = push.attachments.height_map;
-    ivec2 size = imageSize(daxa_image2D(img));
-    ivec2 tex_coords = ivec2(te_uv * vec2(size));
-    float height = imageLoad(daxa_image2D(img), tex_coords).r;
-    color = vec4(vec3(pow(height, 2.2)), 1);
+    daxa_ImageViewId img = push.attachments.terrain_albedo_map;
+    daxa_SamplerId samp = push.linear_sampler;
+
+    vec3 albedo = texture(daxa_sampler2D(img, samp), te_uv).rgb;
+    color = vec4(pow(albedo, vec3(2.2)), 1);
 }
 
 #endif

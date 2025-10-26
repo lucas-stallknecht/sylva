@@ -1,6 +1,5 @@
 #pragma once
 
-#include "daxa/core.hpp"
 #include <daxa/daxa.hpp>
 using namespace daxa::types;
 
