@@ -20,7 +20,7 @@ namespace sylva
               .root_paths =
                   {
                       DAXA_SHADER_INCLUDE_DIR,
-                      "/",
+                      "src",
                   },
               .default_language = daxa::ShaderLanguage::GLSL,
           })}

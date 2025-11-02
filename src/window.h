@@ -22,13 +22,17 @@ namespace sylva
     {
       public:
         explicit Window(char const * window_name, u32 width = 800, u32 height = 600);
+        Window(Window const &) = default;
+        Window(Window &&) = delete;
+        Window & operator=(Window const &) = default;
+        Window & operator=(Window &&) = delete;
         ~Window();
 
         void set_mouse_capture(bool should_capture) const;
-        bool should_close() const;
+        [[nodiscard]] bool should_close() const;
         void update() const;
-        GLFWwindow * get_glfw_window() const;
-        daxa::NativeWindowHandle get_native_window_handle() const;
+        [[nodiscard]] GLFWwindow * get_glfw_window() const;
+        [[nodiscard]] daxa::NativeWindowHandle get_native_window_handle() const;
         static daxa::NativeWindowPlatform get_native_platform();
 
         bool swapchain_out_of_date = false;

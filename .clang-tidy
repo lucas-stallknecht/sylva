@@ -1,0 +1,26 @@
+Checks: "*,
+        -abseil-*,
+        -altera-*,
+        -android-*,
+        -fuchsia-*,
+        -google-*,
+        -llvm*,
+        -zircon-*,
+        -readability-static-accessed-through-instance,
+        -readability-avoid-const-params-in-decls,
+        -cppcoreguidelines-non-private-member-variables-in-classes,
+        -misc-non-private-member-variables-in-classes,
+        -hicpp-uppercase-literal-suffix,
+        -readability-uppercase-literal-suffix,
+        -readability-identifier-length,
+        -cppcoreguidelines-pro-type-reinterpret-cast,
+        -cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,
+        -bugprone-easily-swappable-parameters,
+        -readability-simplify-boolean-expr,
+        -cppcoreguidelines-avoid-magic-numbers,
+        -readability-magic-numbers,
+        -readability-function-cognitive-complexity,
+        -modernize-use-trailing-return-type
+"
+WarningsAsErrors: ''
+HeaderFilterRegex: ''

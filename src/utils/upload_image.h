@@ -11,12 +11,12 @@ namespace sylva
 {
 
     // TODO(lstallknecht): Make upload TaskGraph reusable for multiple uploads...
-    inline std::optional<daxa::TaskImage> upload_image(daxa::Device device, std::string image_path,
-                                                       daxa::ImageInfo image_info)
+    inline std::optional<daxa::TaskImage>
+    upload_image(daxa::Device device, std::string const & image_path, daxa::ImageInfo image_info)
     {
         stbi_uc * pixels_u8 = nullptr;
         float * pixels_f32 = nullptr;
-        bool is_hdr = stbi_is_hdr(image_path.c_str());
+        bool is_hdr = stbi_is_hdr(image_path.c_str()) != 0;
 
         int tex_width{};
         int tex_height{};
@@ -27,8 +27,10 @@ namespace sylva
         if (is_hdr)
         {
             pixels_f32 = stbi_loadf(image_path.c_str(), &tex_width, &tex_height, &channels, 4);
-            if (!pixels_f32)
+            if (pixels_f32 == nullptr)
+            {
                 return std::nullopt;
+            }
 
             bytes_per_pixel = 4 * sizeof(float);                   // RGBA float
             image_info.format = daxa::Format::R32G32B32A32_SFLOAT; // float format
@@ -37,12 +39,16 @@ namespace sylva
         {
             int stb_format = STBI_rgb_alpha;
             if (image_info.format == daxa::Format::R8_UNORM)
+            {
                 stb_format = STBI_grey;
+            }
 
             pixels_u8 =
                 stbi_load(image_path.c_str(), &tex_width, &tex_height, &channels, stb_format);
-            if (!pixels_u8)
+            if (pixels_u8 == nullptr)
+            {
                 return std::nullopt;
+            }
 
             bytes_per_pixel = (image_info.format == daxa::Format::R8_UNORM) ? 1u : 4u;
         }
@@ -108,9 +114,13 @@ namespace sylva
         upload_tg.execute({});
 
         if (is_hdr)
+        {
             stbi_image_free(pixels_f32);
+        }
         else
+        {
             stbi_image_free(pixels_u8);
+        }
 
         return task_image;
     }

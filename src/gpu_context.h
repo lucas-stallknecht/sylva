@@ -15,15 +15,18 @@ namespace sylva
     struct GPUContext
     {
         explicit GPUContext(Window const & window);
+        GPUContext(GPUContext const &) = default;
+        GPUContext(GPUContext &&) = delete;
+        GPUContext & operator=(GPUContext const &) = default;
+        GPUContext & operator=(GPUContext &&) = delete;
         ~GPUContext() = default;
 
-        daxa::Instance instance = {};
-        daxa::Device device = {};
-        daxa::Swapchain swapchain = {};
-        daxa::PipelineManager pipeline_manager = {};
+        daxa::Instance instance;
+        daxa::Device device;
+        daxa::Swapchain swapchain;
+        daxa::PipelineManager pipeline_manager;
 
-        std::unordered_map<std::string, std::shared_ptr<daxa::RasterPipeline>> raster_pipelines =
-            {};
+        std::unordered_map<std::string, std::shared_ptr<daxa::RasterPipeline>> raster_pipelines;
     };
 
 } // namespace sylva
