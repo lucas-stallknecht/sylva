@@ -3,8 +3,8 @@
 #extension GL_EXT_debug_printf : enable
 
 #include "terrain_generation.inl"
-#include "../../shader_shared/random.glsl"
-#include "../../shader_shared/noise.glsl"
+#include "shader_shared/random.glsl"
+#include "shader_shared/noise.glsl"
 
 DAXA_DECL_PUSH_CONSTANT(GenerateTerrainPush, push)
 

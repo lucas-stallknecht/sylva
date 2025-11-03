@@ -6,6 +6,7 @@ build
 .zed
 compile_commands.json
 __cmake_systeminformation
+notes.md
 
 *.d
 *.slo
