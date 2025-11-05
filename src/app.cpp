@@ -3,24 +3,36 @@
 #include <daxa/daxa.hpp>
 #include <daxa/utils/task_graph.hpp>
 #include <daxa/utils/task_graph_types.hpp>
+#include <imgui_impl_glfw.h>
 
 #include "terrain/generation/terrain_generation.h"
 
 namespace sylva
 {
-    App::App() : window_{"Sylva", 1600, 900}, ctx_{window_}
+    App::App()
+        : window_{"Sylva", 1600, 900}, ctx_{window_},
+          gui_{[&]()
+               {
+                   ImGui::CreateContext();
+                   ImGui_ImplGlfw_InitForVulkan(window_.get_glfw_window(), true);
+                   return daxa::ImGuiRenderer({
+                       .device = ctx_.device,
+                       .format = ctx_.swapchain.get_format(),
+                   });
+               }()}
     {
         compile_pipelines();
         create_terrain_generation_task_graph();
-        renderer_ = std::make_unique<Renderer>(ctx_, terrain_resources_);
+        renderer_ = std::make_unique<Renderer>(ctx_, terrain_resources_, gui_);
     };
 
     App::~App()
     {
         ctx_.device.wait_idle();
+        ctx_.device.collect_garbage();
+        ImGui_ImplGlfw_Shutdown();
         ctx_.device.destroy_image(terrain_resources_.height_map.get_state().images[0]);
         ctx_.device.destroy_image(terrain_resources_.albedo_map.get_state().images[0]);
-        ctx_.device.collect_garbage();
     }
 
     void App::compile_pipelines()
@@ -60,15 +72,33 @@ namespace sylva
         });
         terrain_gen_tg_.use_persistent_image(terrain_resources_.height_map);
         terrain_gen_tg_.use_persistent_image(terrain_resources_.albedo_map);
-        terrain_gen_tg_.add_task(
-            daxa::HeadTask<GenerateTerrainH::Info>()
-                .head_views({
-                    .terrain_height_map = terrain_resources_.height_map.view(),
-                    .terrain_albedo_map = terrain_resources_.albedo_map.view(),
-                })
-                .executes(sylva::generate_terrain_callback, terrain_gen_pipeline_.get()));
+        terrain_gen_tg_.add_task(daxa::HeadTask<GenerateTerrainH::Info>()
+                                     .head_views({
+                                         .terrain_height_map = terrain_resources_.height_map.view(),
+                                         .terrain_albedo_map = terrain_resources_.albedo_map.view(),
+                                     })
+                                     .executes(sylva::generate_terrain_callback,
+                                               terrain_gen_pipeline_.get(), &terrain_params_));
         terrain_gen_tg_.submit({});
         terrain_gen_tg_.complete({});
+    }
+
+    void App::ui_update()
+    {
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Terrain Generation Parameters");
+
+        ImGui::SliderFloat("Amplitude", &terrain_params_.amplitude, 0.0f, 1.0f);
+        ImGui::SliderFloat("Scale", &terrain_params_.scale, 0.0f, 10.0f);
+        ImGui::SliderInt("Octaves", &terrain_params_.octaves, 1, 8);
+        ImGui::SliderFloat("Persistence", &terrain_params_.persistence, 0.0f, 1.0f);
+        ImGui::SliderFloat("Lacunarity", &terrain_params_.lacunarity, 0.0f, 10.0f);
+
+        ImGui::End();
+
+        ImGui::Render();
     }
 
     bool App::update()
@@ -77,6 +107,7 @@ namespace sylva
         {
             return true;
         }
+        ui_update();
         window_.update();
 
         auto reload_result = ctx_.pipeline_manager.reload_all();

@@ -17,18 +17,12 @@ namespace sylva
         };
     }
 
-    inline void generate_terrain_callback(daxa::TaskInterface ti, daxa::ComputePipeline * pipeline)
+    inline void generate_terrain_callback(daxa::TaskInterface ti, daxa::ComputePipeline * pipeline,
+                                          TerrainGenerationParams const * params)
     {
         ti.recorder.set_pipeline(*pipeline);
         ti.recorder.push_constant(GenerateTerrainPush{
-            .generation_params =
-                {
-                    .amplitude = 0.3f,
-                    .scale = 0.5f,
-                    .octaves = 4,
-                    .persistence = 0.5f,
-                    .lacunarity = 2.0f,
-                },
+            .generation_params = *params,
             .attachments = ti.attachment_shader_blob,
         });
         ti.recorder.dispatch({

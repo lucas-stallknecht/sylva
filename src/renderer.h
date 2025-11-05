@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <daxa/utils/task_graph.hpp>
+#include <daxa/utils/imgui.hpp>
 
 #include "gpu_context.h"
 #include "terrain/rendering/terrain_rendering.h"
@@ -14,7 +15,8 @@ namespace sylva
     class Renderer
     {
       public:
-        Renderer(GPUContext & gpu_context, TerrainResources & terrain_reousrces);
+        Renderer(GPUContext & gpu_context, TerrainResources & terrain_reousrces,
+                 daxa::ImGuiRenderer & gui);
         Renderer(Renderer const &) = default;
         Renderer(Renderer &&) = delete;
         Renderer & operator=(Renderer const &) = delete;
@@ -26,7 +28,7 @@ namespace sylva
       private:
         void compile_pipelines();
         void create_global_resources();
-        void create_main_tg(TerrainResources & terrain_reousrces);
+        void create_main_tg(TerrainResources & terrain_reousrces, daxa::ImGuiRenderer & gui);
 
         GPUContext & ctx_;
         std::unordered_map<std::string, std::shared_ptr<daxa::RasterPipeline>> raster_pipelines_;

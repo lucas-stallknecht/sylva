@@ -4,12 +4,13 @@
 
 namespace sylva
 {
-    Renderer::Renderer(GPUContext & gpu_context, TerrainResources & terrain_reousrces)
+    Renderer::Renderer(GPUContext & gpu_context, TerrainResources & terrain_reousrces,
+                       daxa::ImGuiRenderer & gui)
         : ctx_{gpu_context}, terrain_ctx_(ctx_.device)
     {
         compile_pipelines();
         create_global_resources();
-        create_main_tg(terrain_reousrces);
+        create_main_tg(terrain_reousrces, gui);
     }
 
     Renderer::~Renderer()
@@ -40,7 +41,7 @@ namespace sylva
         });
     }
 
-    void Renderer::create_main_tg(TerrainResources & terrain_reousrces)
+    void Renderer::create_main_tg(TerrainResources & terrain_reousrces, daxa::ImGuiRenderer & gui)
     {
         main_tg_ = daxa::TaskGraph({
             .device = ctx_.device,
@@ -64,6 +65,20 @@ namespace sylva
                               .executes(sylva::render_terrain_callback,
                                         raster_pipelines_.at("terrain_rendering").get(),
                                         &terrain_ctx_, linear_sampler_));
+
+        auto imgui_task = daxa::InlineTask::Raster("Dear ImGui")
+                              .color_attachment.reads_writes(swapchain_image_)
+                              .executes(
+                                  [&](daxa::TaskInterface ti)
+                                  {
+                                      auto render_target_id = ti.get(swapchain_image_).ids[0];
+                                      auto render_size =
+                                          ctx_.device.image_info(render_target_id).value().size;
+                                      gui.record_commands(ImGui::GetDrawData(), ti.recorder,
+                                                          ti.get(swapchain_image_).ids[0],
+                                                          render_size.x, render_size.y);
+                                  });
+        main_tg_.add_task(imgui_task);
 
         main_tg_.submit({});
         main_tg_.present({});
