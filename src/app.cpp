@@ -23,7 +23,7 @@ namespace sylva
     {
         compile_pipelines();
         create_terrain_generation_task_graph();
-        renderer_ = std::make_unique<Renderer>(ctx_, terrain_resources_, gui_);
+        renderer_ = std::make_unique<Renderer>(ctx_, &camera_, terrain_resources_, gui_);
     };
 
     App::~App()
@@ -107,8 +107,11 @@ namespace sylva
         {
             return true;
         }
-        ui_update();
+        auto & io = ImGui::GetIO();
+
         window_.update();
+        camera_.process_input(window_, io.DeltaTime);
+        ui_update();
 
         auto reload_result = ctx_.pipeline_manager.reload_all();
 

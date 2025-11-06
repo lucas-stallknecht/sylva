@@ -4,6 +4,34 @@
 
 namespace sylva
 {
+    namespace
+    {
+        void glfw_window_size_callback(GLFWwindow * window, int width, int height)
+        {
+            auto * win = static_cast<Window *>(glfwGetWindowUserPointer(window));
+            win->swapchain_out_of_date = true;
+            win->minimized = (width == 0 || height == 0);
+        }
+
+        void glfw_key_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
+        {
+            auto * win = static_cast<Window *>(glfwGetWindowUserPointer(window));
+            win->on_key(key, action);
+        }
+
+        void glfw_cursor_pos_callback(GLFWwindow * window, double xpos, double ypos)
+        {
+            auto * win = static_cast<Window *>(glfwGetWindowUserPointer(window));
+            win->on_mouse_move(static_cast<float>(xpos), static_cast<float>(ypos));
+        }
+
+        void glfw_mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
+        {
+            auto * win = static_cast<Window *>(glfwGetWindowUserPointer(window));
+            win->on_mouse_button(button, action);
+        }
+    } // namespace
+
     Window::Window(char const * window_name, u32 width, u32 height) : width_{width}, height_{height}
     {
         glfwInit();
@@ -15,16 +43,11 @@ namespace sylva
                                    nullptr, nullptr);
 
         glfwSetWindowUserPointer(window_, this);
-        // Set a callback to handle resizing events
-        glfwSetWindowSizeCallback(window_,
-                                  [](GLFWwindow * window, int size_x, int size_y)
-                                  {
-                                      auto * win =
-                                          static_cast<Window *>(glfwGetWindowUserPointer(window));
-                                      win->width_ = static_cast<u32>(size_x);
-                                      win->height_ = static_cast<u32>(size_y);
-                                      win->swapchain_out_of_date = true;
-                                  });
+
+        glfwSetWindowSizeCallback(window_, glfw_window_size_callback);
+        glfwSetKeyCallback(window_, glfw_key_callback);
+        glfwSetCursorPosCallback(window_, glfw_cursor_pos_callback);
+        glfwSetMouseButtonCallback(window_, glfw_mouse_button_callback);
     }
 
     Window::~Window()
@@ -77,5 +100,73 @@ namespace sylva
     }
 
     GLFWwindow * Window::get_glfw_window() const { return window_; }
+
+    void Window::on_key(int key, int action)
+    {
+        if (key >= 0 && key < static_cast<int>(keys_are_pressed_.size()))
+        {
+            keys_are_pressed_[key] = (action == GLFW_PRESS || action == GLFW_REPEAT);
+        }
+    }
+
+    void Window::on_mouse_move(float xpos, float ypos)
+    {
+        if (!mouse_captured_)
+        {
+            return;
+        }
+
+        if (first_mouse_move_)
+        {
+            last_mouse_position_ = {xpos, ypos};
+            first_mouse_move_ = false;
+        }
+
+        mouse_delta_ = {xpos - last_mouse_position_.x, last_mouse_position_.y - ypos};
+        last_mouse_position_ = {xpos, ypos};
+    }
+
+    void Window::on_mouse_button(int button, int action)
+    {
+        if (button == GLFW_MOUSE_BUTTON_RIGHT)
+        {
+            if (action == GLFW_PRESS)
+            {
+                mouse_captured_ = true;
+                first_mouse_move_ = true;
+                glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
+            else if (action == GLFW_RELEASE)
+            {
+                mouse_captured_ = false;
+                glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            }
+        }
+    }
+
+    bool Window::is_key_pressed(int key) const
+    {
+        if (key < 0 || key >= static_cast<int>(keys_are_pressed_.size()))
+        {
+            return false;
+        }
+        return keys_are_pressed_[key];
+    }
+
+    glm::vec2 Window::get_mouse_position() const
+    {
+        double x, y;
+        glfwGetCursorPos(window_, &x, &y);
+        return {static_cast<float>(x), static_cast<float>(y)};
+    }
+
+    glm::vec2 Window::get_mouse_delta()
+    {
+        glm::vec2 delta = mouse_delta_;
+        mouse_delta_ = {0.0f, 0.0f};
+        return delta;
+    }
+
+    bool Window::is_mouse_captured() const { return mouse_captured_; }
 
 } // namespace sylva

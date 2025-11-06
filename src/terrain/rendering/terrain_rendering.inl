@@ -2,6 +2,7 @@
 
 #include <daxa/daxa.inl>
 #include <daxa/utils/task_graph.inl>
+#include "../../shader_shared/shared.inl"
 
 struct TerrainVertex
 {
@@ -19,7 +20,7 @@ DAXA_DECL_TASK_HEAD_END
 
 struct RenderTerrainPush
 {
-    daxa_f32mat4x4 proj_view;
     daxa_SamplerId linear_sampler;
+    daxa_BufferPtr(CamInfo) camera_buffer;
     DAXA_TH_BLOB(RenderTerrainH, attachments)
 };

@@ -56,6 +56,7 @@ namespace sylva
     };
     std::vector<TerrainVertex> generate_terrain_vertices(TerrainInfo const & terrain_info);
     void render_terrain_callback(daxa::TaskInterface ti, daxa::RasterPipeline * pipeline,
-                                 RenderTerrainContext * terrain_context, daxa::SamplerId sampler);
+                                 RenderTerrainContext * terrain_context, daxa::SamplerId sampler,
+                                 daxa::TaskBuffer const & cam_buffer);
 
 } // namespace sylva

@@ -71,18 +71,10 @@ namespace sylva
     }
 
     void render_terrain_callback(daxa::TaskInterface ti, daxa::RasterPipeline * pipeline,
-                                 RenderTerrainContext * terrain_context, daxa::SamplerId sampler)
+                                 RenderTerrainContext * terrain_context, daxa::SamplerId sampler,
+                                 daxa::TaskBuffer const & cam_buffer)
     {
         auto const & AI = RenderTerrainH::Info::AT;
-
-        glm::mat4 view = glm::lookAt(glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 0.0f, 0.0f),
-                                     glm::vec3(0.0f, 1.0f, 0.0f));
-        // glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 1.2f, 0.0f), glm::vec3(0.0f, 0.0f, 0.01f),
-        //                              glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 proj = glm::perspective(
-            glm::radians(70.0f), static_cast<float>(1600) / static_cast<float>(900), 0.01f, 10.0f);
-        proj[1][1] *= -1.0f;
-        glm::mat4 proj_view = proj * view;
 
         auto image_info = ti.info(AI.dst_img).value();
 
@@ -102,8 +94,9 @@ namespace sylva
         render_recorder.set_pipeline(*pipeline);
 
         render_recorder.push_constant(RenderTerrainPush{
-            .proj_view = std::bit_cast<daxa_f32mat4x4>(proj_view),
             .linear_sampler = sampler,
+            .camera_buffer =
+                ti.device.buffer_device_address(cam_buffer.get_state().buffers[0]).value(),
             .attachments = ti.attachment_shader_blob,
         });
         render_recorder.draw({.vertex_count = terrain_context->vertex_count});

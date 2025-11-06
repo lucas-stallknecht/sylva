@@ -7,6 +7,7 @@
 
 #include "window.h"
 #include "gpu_context.h"
+#include "camera.h"
 #include "renderer.h"
 #include "terrain/terrain_common.h"
 #include "terrain/generation/terrain_generation.inl"
@@ -33,6 +34,7 @@ namespace sylva
 
         Window window_;
         GPUContext ctx_;
+        Camera camera_;
         std::unique_ptr<Renderer> renderer_;
         daxa::ImGuiRenderer gui_;
 

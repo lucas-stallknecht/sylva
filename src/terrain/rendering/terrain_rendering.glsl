@@ -68,7 +68,7 @@ void main() {
     pos.y = height;
 
     // Now project to clip space
-    gl_Position = push.proj_view * pos;
+    gl_Position = deref(push.camera_buffer).proj_view * pos;
 }
 
 #elif DAXA_SHADER_STAGE == DAXA_SHADER_STAGE_FRAGMENT

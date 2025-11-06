@@ -15,6 +15,7 @@ using HWND = void *;
 #endif
 
 #include <GLFW/glfw3native.h>
+#include <glm/glm.hpp>
 
 namespace sylva
 {
@@ -28,6 +29,10 @@ namespace sylva
         Window & operator=(Window &&) = delete;
         ~Window();
 
+        void on_key(int key, int action);
+        void on_mouse_move(float xpos, float ypos);
+        void on_mouse_button(int button, int action);
+
         void set_mouse_capture(bool should_capture) const;
         [[nodiscard]] bool should_close() const;
         void update() const;
@@ -35,11 +40,21 @@ namespace sylva
         [[nodiscard]] daxa::NativeWindowHandle get_native_window_handle() const;
         static daxa::NativeWindowPlatform get_native_platform();
 
+        [[nodiscard]] bool is_key_pressed(int key) const;
+        [[nodiscard]] glm::vec2 get_mouse_position() const;
+        [[nodiscard]] glm::vec2 get_mouse_delta();
+        [[nodiscard]] bool is_mouse_captured() const;
+
         bool swapchain_out_of_date = false;
         bool minimized = false;
 
       private:
         GLFWwindow * window_;
         u32 width_, height_;
+        std::array<bool, 512> keys_are_pressed_{};
+        bool mouse_captured_ = false;
+        bool first_mouse_move_ = true;
+        glm::vec2 last_mouse_position_{0.0f};
+        glm::vec2 mouse_delta_{0.0f};
     };
 }; // namespace sylva
