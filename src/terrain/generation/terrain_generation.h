@@ -19,11 +19,11 @@ namespace sylva
 
     inline void generate_terrain_callback(daxa::TaskInterface ti,
                                           std::shared_ptr<daxa::ComputePipeline> const & pipeline,
-                                          TerrainGenerationParams const & params)
+                                          TerrainGenerationParams const * params)
     {
         ti.recorder.set_pipeline(*pipeline);
         ti.recorder.push_constant(GenerateTerrainPush{
-            .generation_params = params,
+            .generation_params = *params,
             .attachments = ti.attachment_shader_blob,
         });
         ti.recorder.dispatch({

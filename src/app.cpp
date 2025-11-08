@@ -47,13 +47,13 @@ namespace sylva
     {
         daxa::ImageId terrain_height_map_id = ctx_.device.create_image({
             .format = daxa::Format::R32_SFLOAT,
-            .size = {.x = 4096, .y = 4096, .z = 1},
+            .size = {.x = 4096u, .y = 4096u, .z = 1u},
             .usage =
                 daxa::ImageUsageFlagBits::SHADER_STORAGE | daxa::ImageUsageFlagBits::SHADER_SAMPLED,
         });
         daxa::ImageId terrain_albedo_id = ctx_.device.create_image({
             .format = daxa::Format::R8G8B8A8_UNORM,
-            .size = {.x = 4096, .y = 4096, .z = 1},
+            .size = {.x = 4096u, .y = 4096u, .z = 1u},
             .usage =
                 daxa::ImageUsageFlagBits::SHADER_STORAGE | daxa::ImageUsageFlagBits::SHADER_SAMPLED,
         });
@@ -78,7 +78,7 @@ namespace sylva
                                          .terrain_albedo_map = terrain_resources_.albedo_map.view(),
                                      })
                                      .executes(sylva::generate_terrain_callback,
-                                               terrain_gen_pipeline_, terrain_params_));
+                                               terrain_gen_pipeline_, &terrain_params_));
         terrain_gen_tg_.submit({});
         terrain_gen_tg_.complete({});
     }
