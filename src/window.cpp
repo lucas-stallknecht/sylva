@@ -32,14 +32,15 @@ namespace sylva
         }
     } // namespace
 
-    Window::Window(char const * window_name, u32 width, u32 height) : width_{width}, height_{height}
+    Window::Window(char const * window_name, std::uint32_t width, std::uint32_t height)
+        : width_{width}, height_{height}
     {
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        window_ = glfwCreateWindow(static_cast<i32>(width_), static_cast<i32>(height_), window_name,
+        window_ = glfwCreateWindow(static_cast<int>(width_), static_cast<int>(height_), window_name,
                                    nullptr, nullptr);
 
         glfwSetWindowUserPointer(window_, this);

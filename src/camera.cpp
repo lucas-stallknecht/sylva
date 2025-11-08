@@ -5,7 +5,7 @@ namespace sylva
 {
     Camera::Camera() { update_vectors(); }
 
-    void Camera::process_input(Window & window, float dt)
+    void Camera::process_input(Window & window, float const dt)
     {
         glm::vec3 move_dir{0.0f};
 
@@ -29,7 +29,7 @@ namespace sylva
 
         if (window.is_mouse_captured())
         {
-            glm::vec2 delta = window.get_mouse_delta() * mouse_sensitivity;
+            auto const delta = window.get_mouse_delta() * mouse_sensitivity;
 
             yaw_ += delta.x;
             pitch_ += delta.y;

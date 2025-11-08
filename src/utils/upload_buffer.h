@@ -7,8 +7,8 @@ namespace sylva
 {
 
     // TODO(lstallknecht): Make upload TaskGraph reusable for multiple uploads
-    // (currently we create a new TaskGraph per upload which is inefficient —
-    // instead we should build once and reuse with parameterised data and buffers).
+    // Currently, we create a new TaskGraph per upload which is inefficient
+    // Instead, we should build it once and reuse it with parameterised data and buffers
 
     inline daxa::TaskBuffer upload_buffer(daxa::Device device, daxa::BufferId buffer_id,
                                           void * data, daxa::usize size,

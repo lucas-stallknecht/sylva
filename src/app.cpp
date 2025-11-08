@@ -23,7 +23,7 @@ namespace sylva
     {
         compile_pipelines();
         create_terrain_generation_task_graph();
-        renderer_ = std::make_unique<Renderer>(ctx_, &camera_, terrain_resources_, gui_);
+        renderer_ = std::make_unique<Renderer>(ctx_, camera_, terrain_resources_, gui_);
     };
 
     App::~App()
@@ -78,7 +78,7 @@ namespace sylva
                                          .terrain_albedo_map = terrain_resources_.albedo_map.view(),
                                      })
                                      .executes(sylva::generate_terrain_callback,
-                                               terrain_gen_pipeline_.get(), &terrain_params_));
+                                               terrain_gen_pipeline_, terrain_params_));
         terrain_gen_tg_.submit({});
         terrain_gen_tg_.complete({});
     }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <daxa/daxa.hpp>
-using namespace daxa::types;
+#include <cstdint>
 
 #include <GLFW/glfw3.h>
 
@@ -22,7 +22,8 @@ namespace sylva
     class Window
     {
       public:
-        explicit Window(char const * window_name, u32 width = 800, u32 height = 600);
+        explicit Window(char const * window_name, std::uint32_t width = 800,
+                        std::uint32_t height = 600);
         Window(Window const &) = default;
         Window(Window &&) = delete;
         Window & operator=(Window const &) = default;
@@ -50,7 +51,7 @@ namespace sylva
 
       private:
         GLFWwindow * window_;
-        u32 width_, height_;
+        std::uint32_t width_, height_;
         std::array<bool, 512> keys_are_pressed_{};
         bool mouse_captured_ = false;
         bool first_mouse_move_ = true;

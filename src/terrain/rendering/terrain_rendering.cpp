@@ -46,15 +46,17 @@ namespace sylva
         return vertices;
     }
 
-    void RenderTerrainContext::update_from_terrain_info(daxa::Device device,
+    void RenderTerrainContext::update_from_terrain_info(daxa::Device & device,
                                                         TerrainInfo const & terrain_info)
     {
         auto vertices = generate_terrain_vertices(terrain_info);
-        daxa::usize size = vertices.size() * sizeof(TerrainVertex);
-        vertex_count = static_cast<daxa::u32>(vertices.size());
+
+        // Compute buffer size in bytes explicitly and use daxa::usize for API calls.
+        auto buffer_size_bytes = static_cast<daxa::usize>(vertices.size() * sizeof(TerrainVertex));
+        vertex_count = vertices.size();
 
         daxa::BufferInfo vertex_buffer_info = {
-            .size = size,
+            .size = buffer_size_bytes,
             .name = "terrain_vertex_buffer",
         };
 
@@ -66,11 +68,13 @@ namespace sylva
         device.destroy_buffer(vertex_buffer.get_state().buffers[0]);
 
         daxa::BufferId buffer_id = device.create_buffer(vertex_buffer_info);
-        upload_buffer(device, buffer_id, vertices.data(), size, "terrain_vertex_buffer");
+        upload_buffer(device, buffer_id, vertices.data(), buffer_size_bytes,
+                      "terrain_vertex_buffer");
         vertex_buffer.set_buffers({.buffers = std::span{&buffer_id, 1}});
     }
 
-    void render_terrain_callback(daxa::TaskInterface ti, daxa::RasterPipeline * pipeline,
+    void render_terrain_callback(daxa::TaskInterface ti,
+                                 std::shared_ptr<daxa::RasterPipeline> const & pipeline,
                                  RenderTerrainContext * terrain_context, daxa::SamplerId sampler,
                                  daxa::TaskBuffer const & cam_buffer)
     {
@@ -99,7 +103,8 @@ namespace sylva
                 ti.device.buffer_device_address(cam_buffer.get_state().buffers[0]).value(),
             .attachments = ti.attachment_shader_blob,
         });
-        render_recorder.draw({.vertex_count = terrain_context->vertex_count});
+        render_recorder.draw(
+            {.vertex_count = static_cast<daxa::u32>(terrain_context->vertex_count)});
 
         ti.recorder = std::move(render_recorder).end_renderpass();
     }

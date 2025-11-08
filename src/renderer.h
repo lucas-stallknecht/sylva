@@ -16,9 +16,9 @@ namespace sylva
     class Renderer
     {
       public:
-        Renderer(GPUContext & gpu_context, Camera const * camera,
-                 TerrainResources & terrain_reousrces, daxa::ImGuiRenderer & gui);
-        Renderer(Renderer const &) = default;
+        Renderer(GPUContext & gpu_context, Camera const & camera,
+                 TerrainResources const & terrain_resources, daxa::ImGuiRenderer & gui);
+        Renderer(Renderer const &) = delete;
         Renderer(Renderer &&) = delete;
         Renderer & operator=(Renderer const &) = delete;
         Renderer & operator=(Renderer &&) = delete;
@@ -29,7 +29,7 @@ namespace sylva
       private:
         void compile_pipelines();
         void create_global_resources();
-        void create_main_tg(Camera const * camera, TerrainResources & terrain_reousrces,
+        void create_main_tg(Camera const & camera, TerrainResources const & terrain_resources,
                             daxa::ImGuiRenderer & gui);
 
         GPUContext & ctx_;

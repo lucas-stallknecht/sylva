@@ -56,6 +56,6 @@ float perlin_noise(vec2 p)
     float nx1 = mix(n01, n11, u.x);
     float nxy = mix(nx0, nx1, u.y);
 
-    // remap result to [0,1]
+    // Remap result to [0,1]
     return nxy * 0.5 + 0.5;
 }
