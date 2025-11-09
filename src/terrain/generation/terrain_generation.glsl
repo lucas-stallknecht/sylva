@@ -42,7 +42,7 @@ void main() {
             )
         );
     float slope = 1.0 - normal.y;
-    float t = smoothstep(0.1, 0.3, slope);
+    float t = smoothstep(0.15, 0.3, slope);
 
     vec3 grass_color = vec3(0.259, 0.439, 0.184);
     vec3 rock_color = vec3(0.190, 0.178, 0.151);

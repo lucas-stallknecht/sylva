@@ -87,7 +87,7 @@ void main()
     vec3 normal = texture(daxa_sampler2D(normal_img, samp), te_uv).rgb;
     normal = normal * 2.0 - 1.0;
 
-    vec3 lightDir = normalize(vec3(0.3, 1.0, 1.0));
+    vec3 lightDir = normalize(vec3(1.0, 0.4, -0.2));
 
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = albedo * diff;

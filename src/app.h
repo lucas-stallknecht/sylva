@@ -30,6 +30,7 @@ namespace sylva
       private:
         void compile_pipelines();
         void create_terrain_generation_task_graph();
+        void generate_terrain();
         void ui_update();
 
         Window window_;
@@ -45,7 +46,7 @@ namespace sylva
         TerrainGenerationParams terrain_params_ = {
             .amplitude = 0.5f,
             .scale = 0.7f,
-            .octaves = 7,
+            .octaves = 10,
             .persistence = 0.4f,
             .lacunarity = 2.0f,
         };

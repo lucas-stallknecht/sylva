@@ -13,7 +13,7 @@ namespace sylva
 
     struct TerrainInfo
     {
-        std::size_t patches = 10u;
+        std::size_t patches = 20u;
         float width_x = 1.0f;
         float width_y = 1.0f;
     };

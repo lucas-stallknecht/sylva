@@ -26,8 +26,8 @@ namespace sylva
 
         static constexpr float move_speed = 1.0f;
         static constexpr float mouse_sensitivity = 0.05f;
-        static constexpr float fov = 70.0f;
+        static constexpr float fov = 50.0f;
         static constexpr float near_plane = 0.01f;
-        static constexpr float far_plane = 10.0f;
+        static constexpr float far_plane = 100.0f;
     };
 } // namespace sylva

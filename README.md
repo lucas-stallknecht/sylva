@@ -9,9 +9,8 @@ You can obtain it from [LunarG’s Vulkan SDK](https://vulkan.lunarg.com/).
 
 ## Roadmap
 
-- [x] Terrain generation (noise-based height)
-  - [ ] Albedo and normal maps
 - [x] ImGui integration + camera controls
+- [x] Terrain generation (noise-based height, albedo and normal maps)
 - [x] Tessellated terrain rendering
   - [ ] Dynamic levels
 - [ ] Grass generation and rendering
@@ -47,3 +46,12 @@ cmake --build --preset cl-x86_64-windows-msvc-debug
 ```
 
 (Adjust the path as needed for your platform and configuration.)
+
+<details>
+  <summary><b>Show Current Project Progress</b></summary>
+
+_Procedural terrain generation_
+
+![stage_preview](misc/stage_preview.png)
+
+</details>

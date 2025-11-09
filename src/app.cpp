@@ -24,6 +24,7 @@ namespace sylva
         compile_pipelines();
         create_terrain_generation_task_graph();
         renderer_ = std::make_unique<Renderer>(ctx_, camera_, terrain_resources_, gui_);
+        generate_terrain();
     };
 
     App::~App()
@@ -96,6 +97,8 @@ namespace sylva
         terrain_gen_tg_.complete({});
     }
 
+    void App::generate_terrain() { terrain_gen_tg_.execute({}); }
+
     void App::ui_update()
     {
         ImGui_ImplGlfw_NewFrame();
@@ -103,11 +106,20 @@ namespace sylva
 
         ImGui::Begin("Terrain Generation Parameters");
 
-        ImGui::SliderFloat("Amplitude", &terrain_params_.amplitude, 0.0f, 1.0f);
-        ImGui::SliderFloat("Scale", &terrain_params_.scale, 0.0f, 10.0f);
-        ImGui::SliderInt("Octaves", &terrain_params_.octaves, 1, 8);
-        ImGui::SliderFloat("Persistence", &terrain_params_.persistence, 0.0f, 1.0f);
-        ImGui::SliderFloat("Lacunarity", &terrain_params_.lacunarity, 0.0f, 10.0f);
+        bool has_terrain_params_changed = false;
+        has_terrain_params_changed |=
+            ImGui::SliderFloat("Amplitude", &terrain_params_.amplitude, 0.0f, 1.0f);
+        has_terrain_params_changed |=
+            ImGui::SliderFloat("Scale", &terrain_params_.scale, 0.0f, 2.0f);
+        has_terrain_params_changed |= ImGui::SliderInt("Octaves", &terrain_params_.octaves, 1, 12);
+        has_terrain_params_changed |=
+            ImGui::SliderFloat("Persistence", &terrain_params_.persistence, 0.0f, 1.0f);
+        has_terrain_params_changed |=
+            ImGui::SliderFloat("Lacunarity", &terrain_params_.lacunarity, 0.0f, 4.0f);
+        if (has_terrain_params_changed)
+        {
+            generate_terrain();
+        }
 
         ImGui::End();
 
@@ -143,8 +155,6 @@ namespace sylva
             window_.swapchain_out_of_date = false;
         }
 
-        // TODO(lstallknecht): move this out the main loop once done iterating
-        terrain_gen_tg_.execute({});
         renderer_->update();
 
         ctx_.device.collect_garbage();
