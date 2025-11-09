@@ -78,16 +78,18 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
-    daxa_ImageViewId img = push.attachments.terrain_albedo_map;
+    daxa_ImageViewId albedo_img = push.attachments.terrain_albedo_map;
+    daxa_ImageViewId normal_img = push.attachments.terrain_normal_map;
     daxa_SamplerId samp = push.linear_sampler;
 
-    vec3 albedo = texture(daxa_sampler2D(img, samp), te_uv).rgb;
+    vec3 albedo = texture(daxa_sampler2D(albedo_img, samp), te_uv).rgb;
     albedo = pow(albedo, vec3(2.2));
+    vec3 normal = texture(daxa_sampler2D(normal_img, samp), te_uv).rgb;
+    normal = normal * 2.0 - 1.0;
 
-    vec3 lightDir = normalize(vec3(-1.0, 1.0, 1.0));
+    vec3 lightDir = normalize(vec3(0.3, 1.0, 1.0));
 
-    // float diff = max(dot(te_normal, lightDir), 0.0);
-    float diff = 1.0;
+    float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = albedo * diff;
     vec3 ambient = albedo * 0.05;
 

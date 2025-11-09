@@ -33,6 +33,7 @@ namespace sylva
         ImGui_ImplGlfw_Shutdown();
         ctx_.device.destroy_image(terrain_resources_.height_map.get_state().images[0]);
         ctx_.device.destroy_image(terrain_resources_.albedo_map.get_state().images[0]);
+        ctx_.device.destroy_image(terrain_resources_.normal_map.get_state().images[0]);
     }
 
     void App::compile_pipelines()
@@ -57,6 +58,12 @@ namespace sylva
             .usage =
                 daxa::ImageUsageFlagBits::SHADER_STORAGE | daxa::ImageUsageFlagBits::SHADER_SAMPLED,
         });
+        daxa::ImageId terrain_normal_id = ctx_.device.create_image({
+            .format = daxa::Format::R8G8B8A8_UNORM,
+            .size = {.x = 4096u, .y = 4096u, .z = 1u},
+            .usage =
+                daxa::ImageUsageFlagBits::SHADER_STORAGE | daxa::ImageUsageFlagBits::SHADER_SAMPLED,
+        });
         terrain_resources_.height_map = daxa::TaskImage({
             .initial_images = {.images = std::span{&terrain_height_map_id, 1}},
             .name = "task_terrain_height",
@@ -65,6 +72,10 @@ namespace sylva
             .initial_images = {.images = std::span{&terrain_albedo_id, 1}},
             .name = "task_terrain_albedo",
         });
+        terrain_resources_.normal_map = daxa::TaskImage({
+            .initial_images = {.images = std::span{&terrain_normal_id, 1}},
+            .name = "task_terrain_normal",
+        });
 
         terrain_gen_tg_ = daxa::TaskGraph({
             .device = ctx_.device,
@@ -72,10 +83,12 @@ namespace sylva
         });
         terrain_gen_tg_.use_persistent_image(terrain_resources_.height_map);
         terrain_gen_tg_.use_persistent_image(terrain_resources_.albedo_map);
+        terrain_gen_tg_.use_persistent_image(terrain_resources_.normal_map);
         terrain_gen_tg_.add_task(daxa::HeadTask<GenerateTerrainH::Info>()
                                      .head_views({
                                          .terrain_height_map = terrain_resources_.height_map.view(),
                                          .terrain_albedo_map = terrain_resources_.albedo_map.view(),
+                                         .terrain_normal_map = terrain_resources_.normal_map.view(),
                                      })
                                      .executes(sylva::generate_terrain_callback,
                                                terrain_gen_pipeline_, &terrain_params_));

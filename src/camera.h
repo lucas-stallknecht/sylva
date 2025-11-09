@@ -17,7 +17,7 @@ namespace sylva
       private:
         void update_vectors();
 
-        glm::vec3 position_{0.0f, 0.3f, 0.0f};
+        glm::vec3 position_{0.0f, 0.1f, 0.0f};
         glm::vec3 forward_{0.0f, 0.0f, -1.0f};
         glm::vec3 up_;
         glm::vec3 right_;

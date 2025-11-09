@@ -8,5 +8,6 @@ namespace sylva
     {
         daxa::TaskImage height_map;
         daxa::TaskImage albedo_map;
+        daxa::TaskImage normal_map;
     };
 } // namespace sylva

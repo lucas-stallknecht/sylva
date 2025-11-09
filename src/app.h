@@ -43,10 +43,10 @@ namespace sylva
         TerrainResources terrain_resources_;
         // TODO(lstallknecht): move the default parameters in a config file
         TerrainGenerationParams terrain_params_ = {
-            .amplitude = 0.3f,
-            .scale = 0.5f,
-            .octaves = 4,
-            .persistence = 0.5f,
+            .amplitude = 0.5f,
+            .scale = 0.7f,
+            .octaves = 7,
+            .persistence = 0.4f,
             .lacunarity = 2.0f,
         };
     };

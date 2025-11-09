@@ -45,11 +45,16 @@ namespace sylva
                 daxa::ShaderCompileInfo2{
                     .source = daxa::ShaderFile{"terrain/rendering/terrain_rendering.glsl"}},
             .color_attachments = {{.format = format}},
+            .depth_test =
+                daxa::DepthTestInfo{
+                    .depth_attachment_format = daxa::Format::D32_SFLOAT,
+                    .enable_depth_write = true,
+                },
             .raster =
                 {
                     .primitive_topology = daxa::PrimitiveTopology::PATCH_LIST,
-                    .polygon_mode = daxa::PolygonMode::LINE,
-                    .line_width = 0.01f,
+                    // .polygon_mode = daxa::PolygonMode::LINE,
+                    // .line_width = 0.01f,
                 },
             .tesselation = {.control_points = 4},
             .push_constant_size = sizeof(RenderTerrainPush),

@@ -35,6 +35,7 @@ namespace sylva
         GPUContext & ctx_;
         std::unordered_map<std::string, std::shared_ptr<daxa::RasterPipeline>> raster_pipelines_;
         daxa::TaskImage swapchain_image_;
+        daxa::TaskImage depth_image_;
         daxa::TaskBuffer cam_buffer_;
         daxa::SamplerId linear_sampler_;
         daxa::TaskGraph main_tg_;

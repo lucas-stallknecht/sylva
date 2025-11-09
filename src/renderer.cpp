@@ -15,6 +15,7 @@ namespace sylva
 
     Renderer::~Renderer()
     {
+        ctx_.device.destroy_image(depth_image_.get_state().images[0]);
         ctx_.device.destroy_sampler(linear_sampler_);
         ctx_.device.destroy_buffer(terrain_ctx_.vertex_buffer.get_state().buffers[0]);
         ctx_.device.destroy_buffer(cam_buffer_.get_state().buffers[0]);
@@ -46,6 +47,17 @@ namespace sylva
             .swapchain_image = true,
             .name = "task_sc_image",
         });
+        daxa::Extent2D sc_extent = ctx_.swapchain.get_surface_extent();
+        auto depth_image_id = ctx_.device.create_image({
+            .format = daxa::Format::D32_SFLOAT,
+            .size = {.x = sc_extent.x, .y = sc_extent.y, .z = 1u},
+            .usage = daxa::ImageUsageFlagBits::DEPTH_STENCIL_ATTACHMENT,
+            .name = "depth_image",
+        });
+        depth_image_ = daxa::TaskImage({
+            .initial_images = {.images = std::span{&depth_image_id, 1}},
+            .name = "task_depth_image",
+        });
     }
 
     void Renderer::create_main_tg(Camera const & camera, TerrainResources const & terrain_resources,
@@ -64,11 +76,13 @@ namespace sylva
         });
 
         main_tg_.use_persistent_image(swapchain_image_);
+        main_tg_.use_persistent_image(depth_image_);
 
         main_tg_.use_persistent_buffer(cam_buffer_);
 
         main_tg_.use_persistent_image(terrain_ptr->height_map);
         main_tg_.use_persistent_image(terrain_ptr->albedo_map);
+        main_tg_.use_persistent_image(terrain_ptr->normal_map);
         main_tg_.use_persistent_buffer(terrain_ctx_.vertex_buffer);
 
         main_tg_.add_task(
@@ -109,7 +123,9 @@ namespace sylva
                                   .vertices = terrain_ctx_.vertex_buffer.view(),
                                   .terrain_height_map = terrain_ptr->height_map.view(),
                                   .terrain_albedo_map = terrain_ptr->albedo_map.view(),
+                                  .terrain_normal_map = terrain_ptr->normal_map.view(),
                                   .dst_img = swapchain_image_.view(),
+                                  .depth = depth_image_.view(),
                               })
                               .executes(sylva::render_terrain_callback,
                                         raster_pipelines_.at("terrain_rendering"), &terrain_ctx_,

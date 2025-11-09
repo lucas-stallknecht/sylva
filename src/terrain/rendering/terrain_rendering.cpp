@@ -93,6 +93,12 @@ namespace sylva
                                 .clear_value = std::array<daxa::f32, 4>{0.1f, 0.1f, 0.1f, 1.0f},
                             },
                         },
+                    .depth_attachment =
+                        daxa::RenderAttachmentInfo{
+                            .image_view = ti.view(AI.depth),
+                            .load_op = daxa::AttachmentLoadOp::CLEAR,
+                            .clear_value = daxa::DepthValue{.depth = 1.0f},
+                        },
                     .render_area = {.width = image_info.size.x, .height = image_info.size.y},
                 });
         render_recorder.set_pipeline(*pipeline);
