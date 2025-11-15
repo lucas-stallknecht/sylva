@@ -1,6 +1,7 @@
 #pragma once
 
 #include "window.h"
+#include "defaults.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -17,17 +18,18 @@ namespace sylva
       private:
         void update_vectors();
 
-        glm::vec3 position_{0.0f, 0.1f, 0.0f};
+        // Use centralized defaults for initial camera transform and orientation.
+        glm::vec3 position_{defaults::camera_initial_position};
         glm::vec3 forward_{0.0f, 0.0f, -1.0f};
         glm::vec3 up_;
         glm::vec3 right_;
-        float yaw_{-90.0f};
-        float pitch_{0.0f};
+        float yaw_{defaults::camera_initial_yaw};
+        float pitch_{defaults::camera_initial_pitch};
 
-        static constexpr float move_speed = 1.0f;
-        static constexpr float mouse_sensitivity = 0.05f;
-        static constexpr float fov = 50.0f;
-        static constexpr float near_plane = 0.01f;
-        static constexpr float far_plane = 100.0f;
+        static constexpr float move_speed = defaults::camera_move_speed;
+        static constexpr float mouse_sensitivity = defaults::camera_mouse_sensitivity;
+        static constexpr float fov = defaults::camera_fov;
+        static constexpr float near_plane = defaults::camera_near_plane;
+        static constexpr float far_plane = defaults::camera_far_plane;
     };
 } // namespace sylva

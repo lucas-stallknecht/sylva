@@ -16,14 +16,16 @@ using HWND = void *;
 
 #include <GLFW/glfw3native.h>
 #include <glm/glm.hpp>
+#include "defaults.h"
 
 namespace sylva
 {
     class Window
     {
       public:
-        explicit Window(char const * window_name, std::uint32_t width = 800,
-                        std::uint32_t height = 600);
+        explicit Window(char const * window_name,
+                        std::uint32_t width = defaults::window_width_fallback,
+                        std::uint32_t height = defaults::window_height_fallback);
         Window(Window const &) = default;
         Window(Window &&) = delete;
         Window & operator=(Window const &) = default;

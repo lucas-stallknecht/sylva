@@ -13,7 +13,7 @@ You can obtain it from [LunarG’s Vulkan SDK](https://vulkan.lunarg.com/).
 - [x] Terrain generation (noise-based height, albedo and normal maps)
 - [x] Tessellated terrain rendering
   - [ ] Dynamic levels
-- [ ] Grass generation and rendering
+- [ ] Grass generation (chunking and clumping) and rendering
 - [ ] Wind simulation
 - [ ] Grass shading (Phong + screen-space shadows)
 - [ ] Optimization (culling, LODs)

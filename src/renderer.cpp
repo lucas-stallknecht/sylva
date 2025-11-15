@@ -6,7 +6,7 @@ namespace sylva
 {
     Renderer::Renderer(GPUContext & gpu_context, Camera const & camera,
                        TerrainResources const & terrain_resources, daxa::ImGuiRenderer & gui)
-        : ctx_{gpu_context}, terrain_ctx_(ctx_.device)
+        : ctx_{gpu_context}, terrain_ctx_(ctx_.device, defaults::terrain_info)
     {
         compile_pipelines();
         create_global_resources();

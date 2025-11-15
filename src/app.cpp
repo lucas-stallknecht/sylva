@@ -10,7 +10,7 @@
 namespace sylva
 {
     App::App()
-        : window_{"Sylva", 1600, 900}, ctx_{window_},
+        : window_{"Sylva", defaults::window_width, defaults::window_height}, ctx_{window_},
           gui_{[&]()
                {
                    ImGui::CreateContext();

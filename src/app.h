@@ -11,6 +11,7 @@
 #include "renderer.h"
 #include "terrain/terrain_common.h"
 #include "terrain/generation/terrain_generation.inl"
+#include "defaults.h"
 
 namespace sylva
 {
@@ -42,13 +43,6 @@ namespace sylva
         std::shared_ptr<daxa::ComputePipeline> terrain_gen_pipeline_;
         daxa::TaskGraph terrain_gen_tg_;
         TerrainResources terrain_resources_;
-        // TODO(lstallknecht): move the default parameters in a config file
-        TerrainGenerationParams terrain_params_ = {
-            .amplitude = 0.5f,
-            .scale = 0.7f,
-            .octaves = 10,
-            .persistence = 0.4f,
-            .lacunarity = 2.0f,
-        };
+        TerrainGenerationParams terrain_params_ = defaults::terrain_generation_defaults;
     };
 } // namespace sylva

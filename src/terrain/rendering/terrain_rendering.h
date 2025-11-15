@@ -13,9 +13,9 @@ namespace sylva
 
     struct TerrainInfo
     {
-        std::size_t patches = 20u;
-        float width_x = 1.0f;
-        float width_y = 1.0f;
+        std::size_t patches;
+        float width_x;
+        float width_y;
     };
 
     struct RenderTerrainContext
@@ -23,9 +23,12 @@ namespace sylva
         daxa::TaskBuffer vertex_buffer;
         std::size_t vertex_count = 0;
 
-        explicit RenderTerrainContext(daxa::Device & device) { update_from_terrain_info(device); };
+        explicit RenderTerrainContext(daxa::Device & device, TerrainInfo const & terrain_info)
+        {
+            update_from_terrain_info(device, terrain_info);
+        };
 
-        void update_from_terrain_info(daxa::Device & device, TerrainInfo const & terrain_info = {});
+        void update_from_terrain_info(daxa::Device & device, TerrainInfo const & terrain_info);
     };
 
     inline daxa::RasterPipelineCompileInfo2

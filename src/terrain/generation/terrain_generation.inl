@@ -16,6 +16,8 @@ struct TerrainGenerationParams
     daxa_i32 octaves;
     daxa_f32 persistence;
     daxa_f32 lacunarity;
+    daxa_f32 slope_min;
+    daxa_f32 slope_max;
 };
 
 struct GenerateTerrainPush
