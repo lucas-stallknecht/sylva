@@ -108,14 +108,27 @@ namespace sylva
 
         bool has_terrain_params_changed = false;
         has_terrain_params_changed |=
-            ImGui::SliderFloat("Amplitude", &terrain_params_.amplitude, 0.0f, 1.0f);
+            ImGui::SliderFloat("Amplitude", &terrain_params_.amplitude, 0.01f, 4.0f);
         has_terrain_params_changed |=
-            ImGui::SliderFloat("Scale", &terrain_params_.scale, 0.0f, 2.0f);
-        has_terrain_params_changed |= ImGui::SliderInt("Octaves", &terrain_params_.octaves, 1, 12);
+            ImGui::SliderFloat("Scale", &terrain_params_.scale, 0.01f, 2.0f);
+        has_terrain_params_changed |= ImGui::SliderInt("Octaves", &terrain_params_.octaves, 1, 14);
         has_terrain_params_changed |=
             ImGui::SliderFloat("Persistence", &terrain_params_.persistence, 0.0f, 1.0f);
         has_terrain_params_changed |=
             ImGui::SliderFloat("Lacunarity", &terrain_params_.lacunarity, 0.0f, 4.0f);
+
+        has_terrain_params_changed |=
+            ImGui::SliderFloat("Slope Min", &terrain_params_.slope_min, 0.01f, 1.0f);
+        has_terrain_params_changed |=
+            ImGui::SliderFloat("Slope Max", &terrain_params_.slope_max, 0.01f, 1.0f);
+
+        // Clamp min to 0..max
+        if (terrain_params_.slope_min > terrain_params_.slope_max)
+        {
+            terrain_params_.slope_min = terrain_params_.slope_max;
+            has_terrain_params_changed = true;
+        }
+
         if (has_terrain_params_changed)
         {
             generate_terrain();

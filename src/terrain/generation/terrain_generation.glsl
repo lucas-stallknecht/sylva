@@ -34,15 +34,32 @@ void main() {
     float height = compute_height(uv);
 
     vec2 eps = vec2(0.0001, 0.0);
+
+    float hL = compute_height(uv - eps.xy);
+    float hR = compute_height(uv + eps.xy);
+    float hD = compute_height(uv - eps.yx);
+    float hU = compute_height(uv + eps.yx);
+
+    float scl = push.generation_params.scale;
     vec3 normal = normalize(vec3(
-                // Skip the cross-product
-                compute_height(uv - eps.xy) - compute_height(uv + eps.xy),
-                2.0 * eps.x,
-                compute_height(uv - eps.yx) - compute_height(uv + eps.yx)
-            )
-        );
-    float slope = 1.0 - normal.y;
-    float t = smoothstep(0.15, 0.3, slope);
+                (hL - hR),
+                (2.0 * eps.x / scl),
+                (hD - hU)
+            ));
+
+    // Normalize vertical scaling
+    float amp = push.generation_params.amplitude;
+    float dX = (hL - hR) / (amp);
+    float dY = (hD - hU) / (amp);
+
+    vec3 color_normal = normalize(vec3(
+                dX,
+                // Compensate for UV scaling stretching the terrain
+                (2.0 * eps.x / scl),
+                dY
+            ));
+    float slope = 1.0 - color_normal.y;
+    float t = smoothstep(push.generation_params.slope_min, push.generation_params.slope_max, slope);
 
     vec3 grass_color = vec3(0.259, 0.439, 0.184);
     vec3 rock_color = vec3(0.190, 0.178, 0.151);
