@@ -105,6 +105,7 @@ namespace sylva
                                                       static_cast<float>(surface_extent.y));
 
                         CamInfo cam_info{};
+                        cam_info.position = std::bit_cast<daxa_f32vec3>(camera_ptr->get_position());
                         cam_info.proj_view = std::bit_cast<daxa_f32mat4x4>(proj_view);
 
                         void * mapped =

@@ -9,15 +9,47 @@ You can obtain it from [LunarG’s Vulkan SDK](https://vulkan.lunarg.com/).
 
 ## Roadmap
 
-- [x] ImGui integration + camera controls
-- [x] Terrain generation (noise-based height, albedo and normal maps)
-- [x] Tessellated terrain rendering
-  - [ ] Dynamic levels
-- [ ] Grass generation (chunking and clumping) and rendering
-- [ ] Wind simulation
-- [ ] Grass shading (Phong + screen-space shadows)
-- [ ] Optimization (culling, LODs)
-- [ ] Additional foliage (moss, etc.)
+### Core Engine
+
+- [x] Camera controls + navigation
+- [x] Vulkan backend using Daxa
+- [x] ImGui integration
+
+### Terrain System
+
+- [x] Procedural heightfield generation (noise-based)
+- [x] Terrain material maps (albedo, normal)
+- [x] Tessellated terrain rendering with dynamic LOD
+
+### Grass & Foliage System
+
+**Geometry**
+
+- [ ] Grass chunk generation
+- [ ] Clump distribution & density mapping
+- [ ] Per-blade geometry (shape, height/width variation)
+- [ ] Blade fullness: layered quads, curvature, and silhouette shaping
+
+**Shading & Animation**
+
+- [ ] Grass shading (Phong/glossy, color variation)
+- [ ] Wind simulation (gusts, turbulence, height-based motion)
+
+**Future Foliage**
+
+- [ ] Ground-cover foliage (moss, small plants)
+- [ ] (Optional) Additional foliage types (flowers, shrubs, leaves)
+
+### Visual Effects & Interaction
+
+- [ ] Screen-space grass shadows
+- [ ] Object–grass interaction
+- [ ] (Optional) translucency / subsurface scattering
+
+### Performance & Optimization
+
+- [ ] Grass culling (frustum & distance-based)
+- [ ] LOD system (density + blade complexity)
 
 ---
 

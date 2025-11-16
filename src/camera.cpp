@@ -60,4 +60,6 @@ namespace sylva
         glm::mat4 view = glm::lookAt(position_, position_ + forward_, up_);
         return proj * view;
     }
+
+    glm::vec3 Camera::get_position() const { return position_; }
 } // namespace sylva

@@ -14,6 +14,7 @@ namespace sylva
 
         void process_input(Window & window, float dt);
         [[nodiscard]] glm::mat4 get_proj_view(float aspect_ratio) const;
+        [[nodiscard]] glm::vec3 get_position() const;
 
       private:
         void update_vectors();
