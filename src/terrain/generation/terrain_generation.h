@@ -6,6 +6,7 @@
 
 #include "daxa/utils/pipeline_manager.hpp"
 #include "terrain_generation.inl"
+#include "../../defaults.h"
 
 namespace sylva
 {
@@ -27,8 +28,8 @@ namespace sylva
             .attachments = ti.attachment_shader_blob,
         });
         ti.recorder.dispatch({
-            .x = 4096u / 8u,
-            .y = 4096u / 8u,
+            .x = defaults::terrain_map_resolution / 8u,
+            .y = defaults::terrain_map_resolution / 8u,
             .z = 1u,
         });
     };

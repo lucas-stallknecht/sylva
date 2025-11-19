@@ -49,19 +49,34 @@ namespace sylva
     {
         daxa::ImageId terrain_height_map_id = ctx_.device.create_image({
             .format = daxa::Format::R32_SFLOAT,
-            .size = {.x = 4096u, .y = 4096u, .z = 1u},
+            .size =
+                {
+                    .x = defaults::terrain_map_resolution,
+                    .y = defaults::terrain_map_resolution,
+                    .z = 1u,
+                },
             .usage =
                 daxa::ImageUsageFlagBits::SHADER_STORAGE | daxa::ImageUsageFlagBits::SHADER_SAMPLED,
         });
         daxa::ImageId terrain_albedo_id = ctx_.device.create_image({
             .format = daxa::Format::R8G8B8A8_UNORM,
-            .size = {.x = 4096u, .y = 4096u, .z = 1u},
+            .size =
+                {
+                    .x = defaults::terrain_map_resolution,
+                    .y = defaults::terrain_map_resolution,
+                    .z = 1u,
+                },
             .usage =
                 daxa::ImageUsageFlagBits::SHADER_STORAGE | daxa::ImageUsageFlagBits::SHADER_SAMPLED,
         });
         daxa::ImageId terrain_normal_id = ctx_.device.create_image({
             .format = daxa::Format::R8G8B8A8_UNORM,
-            .size = {.x = 4096u, .y = 4096u, .z = 1u},
+            .size =
+                {
+                    .x = defaults::terrain_map_resolution,
+                    .y = defaults::terrain_map_resolution,
+                    .z = 1u,
+                },
             .usage =
                 daxa::ImageUsageFlagBits::SHADER_STORAGE | daxa::ImageUsageFlagBits::SHADER_SAMPLED,
         });
@@ -111,7 +126,10 @@ namespace sylva
             ImGui::SliderFloat("Amplitude", &terrain_params_.amplitude, 0.01f, 4.0f);
         has_terrain_params_changed |=
             ImGui::SliderFloat("Scale", &terrain_params_.scale, 0.01f, 2.0f);
-        has_terrain_params_changed |= ImGui::SliderInt("Octaves", &terrain_params_.octaves, 1, 14);
+        uint32_t octaves_min = 1u;
+        uint32_t octaves_max = 14u;
+        has_terrain_params_changed |= ImGui::SliderScalar(
+            "Octaves", ImGuiDataType_U32, &terrain_params_.octaves, &octaves_min, &octaves_max);
         has_terrain_params_changed |=
             ImGui::SliderFloat("Persistence", &terrain_params_.persistence, 0.0f, 1.0f);
         has_terrain_params_changed |=

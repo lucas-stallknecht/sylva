@@ -13,9 +13,8 @@ namespace sylva
 
     struct TerrainInfo
     {
-        std::size_t patches;
-        float width_x;
-        float width_y;
+        std::size_t patch_grid_size;
+        float patch_width;
     };
 
     struct RenderTerrainContext

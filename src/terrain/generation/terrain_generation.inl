@@ -13,7 +13,7 @@ struct TerrainGenerationParams
 {
     daxa_f32 amplitude;
     daxa_f32 scale;
-    daxa_i32 octaves;
+    daxa_u32 octaves;
     daxa_f32 persistence;
     daxa_f32 lacunarity;
     daxa_f32 slope_min;

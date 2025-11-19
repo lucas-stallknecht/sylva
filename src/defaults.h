@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <glm/glm.hpp>
+#include "grass/chunking/grass_chunking.h"
 #include "terrain/generation/terrain_generation.inl"
 #include "terrain/rendering/terrain_rendering.h"
 
@@ -25,22 +26,28 @@ namespace sylva::defaults
     inline constexpr float camera_initial_pitch = 0.0f;
 
     // terrain
-    inline constexpr std::uint32_t terrain_resolution = 4096u;
+    inline constexpr std::uint32_t terrain_map_resolution = 4096u;
 
     inline constexpr TerrainInfo terrain_info = {
-        .patches = 20u,
-        .width_x = 20.0f,
-        .width_y = 20.0f,
+        .patch_grid_size = 20,
+        .patch_width = 20.0f,
     };
 
     inline constexpr TerrainGenerationParams terrain_generation_defaults = {
         .amplitude = 3.2f,
         .scale = 0.7f,
-        .octaves = 12,
+        .octaves = 12u,
         .persistence = 0.35f,
         .lacunarity = 1.9f,
         .slope_min = 0.42f,
         .slope_max = 0.51f,
+    };
+
+    // grass
+    inline constexpr GrassChunkParams grass_chunk_params = {
+        .chunk_grid_size = 5,
+        .chunk_width = 1.0f,
+        .blade_density = 10.0f,
     };
 
 } // namespace sylva::defaults

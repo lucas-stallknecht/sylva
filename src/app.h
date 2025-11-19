@@ -34,6 +34,7 @@ namespace sylva
         void generate_terrain();
         void ui_update();
 
+        // TODO(lstallknecht): use unique_ptr to avoid capturing pointers when creating task_graphs
         Window window_;
         GPUContext ctx_;
         Camera camera_;
