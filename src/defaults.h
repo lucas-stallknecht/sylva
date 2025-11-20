@@ -47,7 +47,7 @@ namespace sylva::defaults
     inline constexpr GrassChunkParams grass_chunk_params = {
         .chunk_grid_size = 5,
         .chunk_width = 1.0f,
-        .blade_density = 10.0f,
+        .blade_density = 100.0f,
     };
 
 } // namespace sylva::defaults

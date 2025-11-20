@@ -32,6 +32,8 @@ namespace sylva
         void compile_pipelines();
         void create_terrain_generation_task_graph();
         void generate_terrain();
+        void create_grass_generation_task_graph();
+        void generate_grass();
         void ui_update();
 
         // TODO(lstallknecht): use unique_ptr to avoid capturing pointers when creating task_graphs
@@ -45,5 +47,9 @@ namespace sylva
         daxa::TaskGraph terrain_gen_tg_;
         TerrainResources terrain_resources_;
         TerrainGenerationParams terrain_params_ = defaults::terrain_generation_defaults;
+
+        std::shared_ptr<daxa::ComputePipeline> grass_gen_pipeline_;
+        daxa::TaskGraph grass_gen_tg_;
+        std::shared_ptr<std::vector<GrassChunk>> grass_chunks_;
     };
 } // namespace sylva

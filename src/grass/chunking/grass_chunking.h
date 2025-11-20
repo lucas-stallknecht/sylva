@@ -18,8 +18,19 @@ namespace sylva
     struct GrassChunk
     {
         glm::vec3 world_origin;
+        daxa_u32 seed;
         daxa::TaskBuffer blade_buffer;
     };
+
+    inline daxa_u32 generate_chunk_seed(std::size_t i, std::size_t j)
+    {
+        std::uint64_t v = (std::uint64_t(i) << 32) | std::uint64_t(j);
+        v += 0x9e3779b97f4a7c15ULL;
+        v = (v ^ (v >> 30)) * 0xbf58476d1ce4e5b9ULL;
+        v = (v ^ (v >> 27)) * 0x94d049bb133111ebULL;
+        v = v ^ (v >> 31);
+        return static_cast<daxa_u32>(v & 0xffffffffu);
+    }
 
     inline std::shared_ptr<std::vector<GrassChunk>>
     create_grass_chunks(GrassChunkParams const & chunk_params)
@@ -46,6 +57,7 @@ namespace sylva
                 float const world_z = -half + (j_f * chunk_params.chunk_width);
 
                 chunk.world_origin = glm::vec3(world_x, 0.0f, world_z);
+                chunk.seed = generate_chunk_seed(i, j);
 
                 chunks.push_back(chunk);
             }

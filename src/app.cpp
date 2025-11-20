@@ -1,11 +1,13 @@
 #include "app.h"
 
+#include <string>
 #include <daxa/daxa.hpp>
 #include <daxa/utils/task_graph.hpp>
 #include <daxa/utils/task_graph_types.hpp>
 #include <imgui_impl_glfw.h>
 
 #include "terrain/generation/terrain_generation.h"
+#include "grass/generation/grass_generation.h"
 
 namespace sylva
 {
@@ -23,8 +25,10 @@ namespace sylva
     {
         compile_pipelines();
         create_terrain_generation_task_graph();
+        create_grass_generation_task_graph();
         renderer_ = std::make_unique<Renderer>(ctx_, camera_, terrain_resources_, gui_);
         generate_terrain();
+        generate_grass();
     };
 
     App::~App()
@@ -35,13 +39,19 @@ namespace sylva
         ctx_.device.destroy_image(terrain_resources_.height_map.get_state().images[0]);
         ctx_.device.destroy_image(terrain_resources_.albedo_map.get_state().images[0]);
         ctx_.device.destroy_image(terrain_resources_.normal_map.get_state().images[0]);
+        for (auto & chunk : *grass_chunks_)
+        {
+            ctx_.device.destroy_buffer(chunk.blade_buffer.get_state().buffers[0]);
+        }
     }
 
     void App::compile_pipelines()
     {
         terrain_gen_pipeline_ =
-            ctx_.pipeline_manager
-                .add_compute_pipeline2(sylva::generate_terrain_pipeline_compile_info())
+            ctx_.pipeline_manager.add_compute_pipeline2(generate_terrain_pipeline_compile_info())
+                .value();
+        grass_gen_pipeline_ =
+            ctx_.pipeline_manager.add_compute_pipeline2(generate_grass_pipeline_compile_info())
                 .value();
     }
 
@@ -95,24 +105,83 @@ namespace sylva
 
         terrain_gen_tg_ = daxa::TaskGraph({
             .device = ctx_.device,
-            .name = "generation_task_graph",
+            .name = "terrain_generation_task_graph",
         });
         terrain_gen_tg_.use_persistent_image(terrain_resources_.height_map);
         terrain_gen_tg_.use_persistent_image(terrain_resources_.albedo_map);
         terrain_gen_tg_.use_persistent_image(terrain_resources_.normal_map);
-        terrain_gen_tg_.add_task(daxa::HeadTask<GenerateTerrainH::Info>()
-                                     .head_views({
-                                         .terrain_height_map = terrain_resources_.height_map.view(),
-                                         .terrain_albedo_map = terrain_resources_.albedo_map.view(),
-                                         .terrain_normal_map = terrain_resources_.normal_map.view(),
-                                     })
-                                     .executes(sylva::generate_terrain_callback,
-                                               terrain_gen_pipeline_, &terrain_params_));
+        terrain_gen_tg_.add_task(
+            daxa::HeadTask<GenerateTerrainH::Info>()
+                .head_views({
+                    .terrain_height_map = terrain_resources_.height_map.view(),
+                    .terrain_albedo_map = terrain_resources_.albedo_map.view(),
+                    .terrain_normal_map = terrain_resources_.normal_map.view(),
+                })
+                .executes(generate_terrain_callback, terrain_gen_pipeline_, &terrain_params_));
         terrain_gen_tg_.submit({});
         terrain_gen_tg_.complete({});
     }
 
     void App::generate_terrain() { terrain_gen_tg_.execute({}); }
+
+    void App::create_grass_generation_task_graph()
+    {
+        auto const params = defaults::grass_chunk_params;
+        grass_chunks_ = create_grass_chunks(params);
+
+        float const blade_step = params.chunk_width / params.blade_density;
+        auto const blades_per_side =
+            static_cast<uint32_t>(std::floor(params.chunk_width * params.blade_density));
+        std::uint32_t const blades_per_chunk = blades_per_side * blades_per_side;
+        std::size_t const blade_buffer_size = blades_per_chunk * sizeof(GrassBlade);
+
+        // TODO(lstallknecht): this is computed ad-hoc from defaults; replace with a proper terrain
+        // rendering parameter once available
+        float const terrain_total_width =
+            defaults::terrain_info.patch_width * defaults::terrain_info.patch_grid_size;
+
+        grass_gen_tg_ = daxa::TaskGraph({
+            .device = ctx_.device,
+            .name = "grass_generation_task_graph",
+        });
+        grass_gen_tg_.use_persistent_image(terrain_resources_.height_map);
+        grass_gen_tg_.use_persistent_image(terrain_resources_.normal_map);
+
+        for (auto & chunk : *grass_chunks_)
+        {
+            daxa::BufferId chunk_blade_buffer =
+                ctx_.device.create_buffer({.size = blade_buffer_size});
+            std::string buffer_name = "task_blade_buffer_" + std::to_string(chunk.seed);
+
+            chunk.blade_buffer = daxa::TaskBuffer({
+                .initial_buffers = {.buffers = std::span{&chunk_blade_buffer, 1}},
+                .name = buffer_name,
+            });
+
+            GenerateGrassBladesPush chunk_push = {
+                .chunk_world_origin = std::bit_cast<daxa_f32vec3>(chunk.world_origin),
+                .chunk_seed = chunk.seed,
+                .blade_step = blade_step,
+                .blades_per_side = blades_per_side,
+                .terrain_total_width = terrain_total_width,
+                .attachments = {},
+            };
+
+            grass_gen_tg_.use_persistent_buffer(chunk.blade_buffer);
+            grass_gen_tg_.add_task(
+                daxa::HeadTask<GenerateGrassBladesH::Info>()
+                    .head_views({
+                        .terrain_height_map = terrain_resources_.height_map.view(),
+                        .terrain_normal_map = terrain_resources_.normal_map.view(),
+                        .blades = chunk.blade_buffer.view(),
+                    })
+                    .executes(generate_grass_callback, grass_gen_pipeline_, chunk_push));
+        }
+        grass_gen_tg_.submit({});
+        grass_gen_tg_.complete({});
+    }
+
+    void App::generate_grass() { grass_gen_tg_.execute({}); }
 
     void App::ui_update()
     {
@@ -126,8 +195,8 @@ namespace sylva
             ImGui::SliderFloat("Amplitude", &terrain_params_.amplitude, 0.01f, 4.0f);
         has_terrain_params_changed |=
             ImGui::SliderFloat("Scale", &terrain_params_.scale, 0.01f, 2.0f);
-        uint32_t octaves_min = 1u;
-        uint32_t octaves_max = 14u;
+        std::uint32_t octaves_min = 1u;
+        std::uint32_t octaves_max = 14u;
         has_terrain_params_changed |= ImGui::SliderScalar(
             "Octaves", ImGuiDataType_U32, &terrain_params_.octaves, &octaves_min, &octaves_max);
         has_terrain_params_changed |=

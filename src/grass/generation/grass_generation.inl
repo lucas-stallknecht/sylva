@@ -17,7 +17,10 @@ DAXA_DECL_TASK_HEAD_END
 
 struct GenerateGrassBladesPush
 {
-    daxa_f32 terrain_total_width;
+    daxa_f32vec3 chunk_world_origin;
+    daxa_u32 chunk_seed;
     daxa_f32 blade_step;
+    daxa_u32 blades_per_side;
+    daxa_f32 terrain_total_width;
     DAXA_TH_BLOB(GenerateGrassBladesH, attachments)
 };
