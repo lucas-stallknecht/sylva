@@ -135,8 +135,8 @@ namespace sylva
         std::uint32_t const blades_per_chunk = blades_per_side * blades_per_side;
         std::size_t const blade_buffer_size = blades_per_chunk * sizeof(GrassBlade);
 
-        // TODO(lstallknecht): this is computed ad-hoc from defaults; replace with a proper terrain
-        // rendering parameter once available
+        // TODO(lstallknecht): this is computed directly from defaults; replace with a proper
+        // terrain rendering parameter once available
         float const terrain_total_width =
             defaults::terrain_info.patch_width * defaults::terrain_info.patch_grid_size;
 

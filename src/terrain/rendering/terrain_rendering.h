@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cstddef>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <daxa/daxa.hpp>
 #include <daxa/utils/pipeline_manager.hpp>
-#include <cstddef>
 
+#include "../../common.h"
 #include "terrain_rendering.inl"
 
 namespace sylva
@@ -17,12 +18,9 @@ namespace sylva
         float patch_width;
     };
 
-    struct RenderTerrainContext
+    struct TerrainGeometry : Geometry
     {
-        daxa::TaskBuffer vertex_buffer;
-        std::size_t vertex_count = 0;
-
-        explicit RenderTerrainContext(daxa::Device & device, TerrainInfo const & terrain_info)
+        explicit TerrainGeometry(daxa::Device & device, TerrainInfo const & terrain_info)
         {
             update_from_terrain_info(device, terrain_info);
         };
@@ -65,7 +63,6 @@ namespace sylva
     std::vector<TerrainVertex> generate_terrain_vertices(TerrainInfo const & terrain_info);
     void render_terrain_callback(daxa::TaskInterface ti,
                                  std::shared_ptr<daxa::RasterPipeline> const & pipeline,
-                                 RenderTerrainContext * terrain_context, daxa::SamplerId sampler,
-                                 daxa::TaskBuffer const & cam_buffer);
+                                 std::size_t vertex_count, daxa::SamplerId sampler);
 
 } // namespace sylva

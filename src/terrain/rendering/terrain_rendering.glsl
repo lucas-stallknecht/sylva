@@ -37,7 +37,7 @@ void main()
 
     // Invocation 0 is responsible for setting tessellation levels for the entire patch.
     if (gl_InvocationID == 0) {
-        vec3 cam_pos = deref(push.camera_buffer).position.xyz;
+        vec3 cam_pos = deref(push.attachments.camera).position.xyz;
 
         float d00 = distance(gl_in[0].gl_Position.xyz, cam_pos);
         float d01 = distance(gl_in[1].gl_Position.xyz, cam_pos);
@@ -90,7 +90,7 @@ void main() {
     pos.y = height;
 
     // Now project to clip space
-    gl_Position = deref(push.camera_buffer).proj_view * pos;
+    gl_Position = deref(push.attachments.camera).proj_view * pos;
 }
 
 #elif DAXA_SHADER_STAGE == DAXA_SHADER_STAGE_FRAGMENT

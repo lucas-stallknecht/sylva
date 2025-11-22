@@ -1,14 +1,16 @@
 #include "renderer.h"
 
 #include "terrain/rendering/terrain_rendering.h"
+#include "utils/buffer_utils.h"
 
 namespace sylva
 {
     Renderer::Renderer(GPUContext & gpu_context, Camera const & camera,
                        TerrainResources const & terrain_resources, daxa::ImGuiRenderer & gui)
-        : ctx_{gpu_context}, terrain_ctx_(ctx_.device, defaults::terrain_info)
+        : ctx_{gpu_context}
     {
         compile_pipelines();
+        create_geometries();
         create_global_resources();
         create_main_tg(camera, terrain_resources, gui);
     }
@@ -17,18 +19,29 @@ namespace sylva
     {
         ctx_.device.destroy_image(depth_image_.get_state().images[0]);
         ctx_.device.destroy_sampler(linear_sampler_);
-        ctx_.device.destroy_buffer(terrain_ctx_.vertex_buffer.get_state().buffers[0]);
+
+        for (auto & pair : geometries_)
+        {
+            ctx_.device.destroy_buffer(pair.second.vertex_buffer.get_state().buffers[0]);
+        }
+        geometries_.clear();
+
         ctx_.device.destroy_buffer(cam_buffer_.get_state().buffers[0]);
     }
 
     void Renderer::compile_pipelines()
     {
         raster_pipelines_.insert(
-            {"terrain_rendering",
-             ctx_.pipeline_manager
-                 .add_raster_pipeline2(
-                     sylva::tesselate_terrain_pipeline_compile_info(ctx_.swapchain.get_format()))
-                 .value()});
+            {"terrain_rendering", ctx_.pipeline_manager
+                                      .add_raster_pipeline2(tesselate_terrain_pipeline_compile_info(
+                                          ctx_.swapchain.get_format()))
+                                      .value()});
+    }
+
+    void Renderer::create_geometries()
+    {
+        geometries_.emplace(std::make_pair(std::string("terrain"),
+                                           TerrainGeometry{ctx_.device, defaults::terrain_info}));
     }
 
     void Renderer::create_global_resources()
@@ -60,6 +73,25 @@ namespace sylva
         });
     }
 
+    void Renderer::render_terrain(TerrainResources const * terrain_ptr)
+    {
+        auto terrain_geo = geometries_.at("terrain");
+        main_tg_.use_persistent_buffer(terrain_geo.vertex_buffer);
+        main_tg_.add_task(daxa::HeadTask<RenderTerrainH::Info>()
+                              .head_views({
+                                  .camera = cam_buffer_.view(),
+                                  .vertices = terrain_geo.vertex_buffer.view(),
+                                  .terrain_height_map = terrain_ptr->height_map.view(),
+                                  .terrain_albedo_map = terrain_ptr->albedo_map.view(),
+                                  .terrain_normal_map = terrain_ptr->normal_map.view(),
+                                  .dst_img = swapchain_image_.view(),
+                                  .depth = depth_image_.view(),
+                              })
+                              .executes(render_terrain_callback,
+                                        raster_pipelines_.at("terrain_rendering"),
+                                        terrain_geo.vertex_count, linear_sampler_));
+    }
+
     void Renderer::create_main_tg(Camera const & camera, TerrainResources const & terrain_resources,
                                   daxa::ImGuiRenderer & gui)
     {
@@ -83,22 +115,14 @@ namespace sylva
         main_tg_.use_persistent_image(terrain_ptr->height_map);
         main_tg_.use_persistent_image(terrain_ptr->albedo_map);
         main_tg_.use_persistent_image(terrain_ptr->normal_map);
-        main_tg_.use_persistent_buffer(terrain_ctx_.vertex_buffer);
 
         main_tg_.add_task(
-            daxa::InlineTask::Transfer("Upload Camera Buffer")
+            daxa::InlineTask::Transfer("UploadCameraBuffer")
                 .writes(cam_buffer_)
                 .executes(
                     [camera_ptr, this](daxa::TaskInterface ti)
                     {
                         daxa::usize size = sizeof(CamInfo);
-                        daxa::BufferId staging_buffer_id = ti.device.create_buffer({
-                            .size = size,
-                            .allocate_info = daxa::MemoryFlagBits::HOST_ACCESS_SEQUENTIAL_WRITE,
-                            .name = "cam_staging_buffer",
-                        });
-                        ti.recorder.destroy_buffer_deferred(staging_buffer_id);
-
                         auto surface_extent = ctx_.swapchain.get_surface_extent();
                         auto proj_view =
                             camera_ptr->get_proj_view(static_cast<float>(surface_extent.x) /
@@ -108,31 +132,12 @@ namespace sylva
                         cam_info.position = std::bit_cast<daxa_f32vec3>(camera_ptr->get_position());
                         cam_info.proj_view = std::bit_cast<daxa_f32mat4x4>(proj_view);
 
-                        void * mapped =
-                            ti.device.buffer_host_address_as<void *>(staging_buffer_id).value();
-                        std::memcpy(mapped, &cam_info, sizeof(cam_info));
-
-                        ti.recorder.copy_buffer_to_buffer({
-                            .src_buffer = staging_buffer_id,
-                            .dst_buffer = ti.get(cam_buffer_).ids[0],
-                            .size = size,
-                        });
+                        upload_buffer(ti, cam_buffer_.get_state().buffers[0], &cam_info, size);
                     }));
 
-        main_tg_.add_task(daxa::HeadTask<RenderTerrainH::Info>()
-                              .head_views({
-                                  .vertices = terrain_ctx_.vertex_buffer.view(),
-                                  .terrain_height_map = terrain_ptr->height_map.view(),
-                                  .terrain_albedo_map = terrain_ptr->albedo_map.view(),
-                                  .terrain_normal_map = terrain_ptr->normal_map.view(),
-                                  .dst_img = swapchain_image_.view(),
-                                  .depth = depth_image_.view(),
-                              })
-                              .executes(sylva::render_terrain_callback,
-                                        raster_pipelines_.at("terrain_rendering"), &terrain_ctx_,
-                                        linear_sampler_, cam_buffer_));
+        render_terrain(terrain_ptr);
 
-        auto imgui_task = daxa::InlineTask::Raster("Dear ImGui")
+        auto imgui_task = daxa::InlineTask::Raster("DearImGui")
                               .color_attachment.reads_writes(swapchain_image_)
                               .executes(
                                   [gui_ptr, this](daxa::TaskInterface ti)

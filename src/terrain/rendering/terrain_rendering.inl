@@ -12,6 +12,7 @@ struct TerrainVertex
 DAXA_DECL_BUFFER_PTR(TerrainVertex)
 
 DAXA_DECL_RASTER_TASK_HEAD_BEGIN(RenderTerrainH)
+DAXA_TH_BUFFER_PTR(RASTER_SHADER::READ, daxa_BufferPtr(CamInfo), camera)
 DAXA_TH_BUFFER_PTR(VERTEX_SHADER::READ, daxa_BufferPtr(TerrainVertex), vertices)
 DAXA_TH_IMAGE_ID(RASTER_SHADER::READ, REGULAR_2D, terrain_height_map)
 DAXA_TH_IMAGE_ID(FRAGMENT_SHADER::READ, REGULAR_2D, terrain_albedo_map)
@@ -23,6 +24,5 @@ DAXA_DECL_TASK_HEAD_END
 struct RenderTerrainPush
 {
     daxa_SamplerId linear_sampler;
-    daxa_BufferPtr(CamInfo) camera_buffer;
     DAXA_TH_BLOB(RenderTerrainH, attachments)
 };

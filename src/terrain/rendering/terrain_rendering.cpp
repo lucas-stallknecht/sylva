@@ -2,7 +2,7 @@
 
 #include <daxa/daxa.hpp>
 
-#include "../../utils/upload_buffer.h"
+#include "../../utils/buffer_utils.h"
 
 namespace sylva
 {
@@ -46,8 +46,8 @@ namespace sylva
         return vertices;
     }
 
-    void RenderTerrainContext::update_from_terrain_info(daxa::Device & device,
-                                                        TerrainInfo const & terrain_info)
+    void TerrainGeometry::update_from_terrain_info(daxa::Device & device,
+                                                   TerrainInfo const & terrain_info)
     {
         auto vertices = generate_terrain_vertices(terrain_info);
 
@@ -62,21 +62,20 @@ namespace sylva
 
         if (!vertex_buffer.is_valid())
         {
-            vertex_buffer = upload_buffer(device, vertices.data(), vertex_buffer_info);
+            vertex_buffer = create_and_upload_buffer(device, vertices.data(), vertex_buffer_info);
             return;
         }
         device.destroy_buffer(vertex_buffer.get_state().buffers[0]);
 
         daxa::BufferId buffer_id = device.create_buffer(vertex_buffer_info);
-        upload_buffer(device, buffer_id, vertices.data(), buffer_size_bytes,
-                      "terrain_vertex_buffer");
+        create_and_upload_buffer(device, buffer_id, vertices.data(), buffer_size_bytes,
+                                 "terrain_vertex_buffer");
         vertex_buffer.set_buffers({.buffers = std::span{&buffer_id, 1}});
     }
 
     void render_terrain_callback(daxa::TaskInterface ti,
                                  std::shared_ptr<daxa::RasterPipeline> const & pipeline,
-                                 RenderTerrainContext * terrain_context, daxa::SamplerId sampler,
-                                 daxa::TaskBuffer const & cam_buffer)
+                                 std::size_t vertex_count, daxa::SamplerId sampler)
     {
         auto const & AI = RenderTerrainH::Info::AT;
 
@@ -105,12 +104,9 @@ namespace sylva
 
         render_recorder.push_constant(RenderTerrainPush{
             .linear_sampler = sampler,
-            .camera_buffer =
-                ti.device.buffer_device_address(cam_buffer.get_state().buffers[0]).value(),
             .attachments = ti.attachment_shader_blob,
         });
-        render_recorder.draw(
-            {.vertex_count = static_cast<daxa::u32>(terrain_context->vertex_count)});
+        render_recorder.draw({.vertex_count = static_cast<daxa::u32>(vertex_count)});
 
         ti.recorder = std::move(render_recorder).end_renderpass();
     }
