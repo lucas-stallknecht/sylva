@@ -1,6 +1,6 @@
 #include "renderer.h"
 
-#include "terrain/rendering/terrain_rendering.h"
+#include "rendering/raster_pipelines.h"
 #include "utils/buffer_utils.h"
 
 namespace sylva
@@ -40,8 +40,18 @@ namespace sylva
 
     void Renderer::create_geometries()
     {
-        geometries_.emplace(std::make_pair(std::string("terrain"),
-                                           TerrainGeometry{ctx_.device, defaults::terrain_info}));
+        auto terrain_vertices = generate_terrain_vertices(defaults::terrain_info);
+        std::size_t terrain_vertex_count = terrain_vertices.size();
+
+        geometries_.emplace(
+            std::make_pair(std::string("terrain"),
+                           Geometry{
+                               .vertex_buffer = create_and_upload_buffer(
+                                   ctx_.device, terrain_vertices.data(),
+                                   daxa::BufferInfo{.size = terrain_vertex_count * sizeof(Vertex),
+                                                    .name = "terrain_vertex_buffer"}),
+                               .vertex_count = terrain_vertices.size(),
+                           }));
     }
 
     void Renderer::create_global_resources()
@@ -71,25 +81,6 @@ namespace sylva
             .initial_images = {.images = std::span{&depth_image_id, 1}},
             .name = "task_depth_image",
         });
-    }
-
-    void Renderer::render_terrain(TerrainResources const * terrain_ptr)
-    {
-        auto terrain_geo = geometries_.at("terrain");
-        main_tg_.use_persistent_buffer(terrain_geo.vertex_buffer);
-        main_tg_.add_task(daxa::HeadTask<RenderTerrainH::Info>()
-                              .head_views({
-                                  .camera = cam_buffer_.view(),
-                                  .vertices = terrain_geo.vertex_buffer.view(),
-                                  .terrain_height_map = terrain_ptr->height_map.view(),
-                                  .terrain_albedo_map = terrain_ptr->albedo_map.view(),
-                                  .terrain_normal_map = terrain_ptr->normal_map.view(),
-                                  .dst_img = swapchain_image_.view(),
-                                  .depth = depth_image_.view(),
-                              })
-                              .executes(render_terrain_callback,
-                                        raster_pipelines_.at("terrain_rendering"),
-                                        terrain_geo.vertex_count, linear_sampler_));
     }
 
     void Renderer::create_main_tg(Camera const & camera, TerrainResources const & terrain_resources,
@@ -135,7 +126,58 @@ namespace sylva
                         upload_buffer(ti, cam_buffer_.get_state().buffers[0], &cam_info, size);
                     }));
 
-        render_terrain(terrain_ptr);
+        main_tg_.use_persistent_buffer(geometries_.at("terrain").vertex_buffer);
+        main_tg_.add_task(
+            daxa::HeadTask<DrawOpaqueH::Info>()
+                .head_views({
+                    .camera = cam_buffer_.view(),
+                    .vertices = geometries_.at("terrain").vertex_buffer.view(),
+                    .terrain_height_map = terrain_ptr->height_map.view(),
+                    .terrain_albedo_map = terrain_ptr->albedo_map.view(),
+                    .terrain_normal_map = terrain_ptr->normal_map.view(),
+                    .dst_img = swapchain_image_.view(),
+                    .depth_img = depth_image_.view(),
+                })
+                .executes(
+                    [&](daxa::TaskInterface ti)
+                    {
+                        auto terrain_geo = geometries_.at("terrain");
+                        auto const & AI = DrawOpaqueH::Info::AT;
+
+                        auto image_info = ti.info(AI.dst_img).value();
+
+                        daxa::RenderCommandRecorder render_recorder =
+                            std::move(ti.recorder)
+                                .begin_renderpass({
+                                    .color_attachments =
+                                        std::array{
+                                            daxa::RenderAttachmentInfo{
+                                                .image_view = ti.view(AI.dst_img),
+                                                .load_op = daxa::AttachmentLoadOp::CLEAR,
+                                                .clear_value = std::array<daxa::f32, 4>{0.1f, 0.1f,
+                                                                                        0.1f, 1.0f},
+                                            },
+                                        },
+                                    .depth_attachment =
+                                        daxa::RenderAttachmentInfo{
+                                            .image_view = ti.view(AI.depth_img),
+                                            .load_op = daxa::AttachmentLoadOp::CLEAR,
+                                            .clear_value = daxa::DepthValue{.depth = 1.0f},
+                                        },
+                                    .render_area = {.width = image_info.size.x,
+                                                    .height = image_info.size.y},
+                                });
+                        render_recorder.set_pipeline(*raster_pipelines_.at("terrain_rendering"));
+
+                        render_recorder.push_constant(DrawTerrainPush{
+                            .linear_sampler = linear_sampler_,
+                            .attachments = ti.attachment_shader_blob,
+                        });
+                        render_recorder.draw(
+                            {.vertex_count = static_cast<daxa::u32>(terrain_geo.vertex_count)});
+
+                        ti.recorder = std::move(render_recorder).end_renderpass();
+                    }));
 
         auto imgui_task = daxa::InlineTask::Raster("DearImGui")
                               .color_attachment.reads_writes(swapchain_image_)

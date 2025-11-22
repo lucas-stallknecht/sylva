@@ -6,8 +6,8 @@
 #include <daxa/utils/task_graph_types.hpp>
 #include <imgui_impl_glfw.h>
 
-#include "terrain/generation/terrain_generation.h"
-#include "grass/generation/grass_generation.h"
+#include "generation/terrain_generation.h"
+#include "generation/grass_generation.h"
 
 namespace sylva
 {

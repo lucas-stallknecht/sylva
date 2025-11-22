@@ -2,9 +2,10 @@
 
 #include <cstdint>
 #include <glm/glm.hpp>
-#include "grass/chunking/grass_chunking.h"
-#include "terrain/generation/terrain_generation.inl"
-#include "terrain/rendering/terrain_rendering.h"
+
+#include "utils/terrain_patches.h"
+#include "utils/grass_chunks.h"
+#include "generation/terrain_generation.inl"
 
 namespace sylva::defaults
 {

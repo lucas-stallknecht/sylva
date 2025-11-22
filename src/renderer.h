@@ -7,7 +7,7 @@
 
 #include "camera.h"
 #include "gpu_context.h"
-#include "terrain/terrain_common.h"
+#include "common.h"
 
 namespace sylva
 {
@@ -31,7 +31,6 @@ namespace sylva
         void create_global_resources();
         void create_main_tg(Camera const & camera, TerrainResources const & terrain_resources,
                             daxa::ImGuiRenderer & gui);
-        void render_terrain(TerrainResources const * terrain_ptr);
 
         GPUContext & ctx_;
         std::unordered_map<std::string, std::shared_ptr<daxa::RasterPipeline>> raster_pipelines_;

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "window.h"
-#include "defaults.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "window.h"
+#include "defaults.h"
 
 namespace sylva
 {

@@ -2,12 +2,7 @@
 
 #include <daxa/daxa.inl>
 #include <daxa/utils/task_graph.inl>
-
-struct GrassBlade
-{
-    daxa_f32vec3 position;
-};
-DAXA_DECL_BUFFER_PTR(GrassBlade)
+#include "../shader_shared/shared.inl"
 
 DAXA_DECL_COMPUTE_TASK_HEAD_BEGIN(GenerateGrassBladesH)
 DAXA_TH_IMAGE_ID(COMPUTE_SHADER::READ, REGULAR_2D, terrain_height_map)

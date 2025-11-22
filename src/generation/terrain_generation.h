@@ -6,14 +6,14 @@
 #include <daxa/utils/pipeline_manager.hpp>
 
 #include "terrain_generation.inl"
-#include "../../defaults.h"
+#include "../defaults.h"
 
 namespace sylva
 {
     inline daxa::ComputePipelineCompileInfo2 generate_terrain_pipeline_compile_info()
     {
         return {
-            .source = daxa::ShaderFile{"terrain/generation/terrain_generation.glsl"},
+            .source = daxa::ShaderFile{"generation/terrain_generation.glsl"},
             .push_constant_size = sizeof(GenerateTerrainPush),
         };
     }

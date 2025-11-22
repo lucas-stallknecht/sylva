@@ -2,9 +2,9 @@
 
 #extension GL_EXT_debug_printf : enable
 
-#include "terrain_rendering.inl"
+#include "opaque.inl"
 
-DAXA_DECL_PUSH_CONSTANT(RenderTerrainPush, push)
+DAXA_DECL_PUSH_CONSTANT(DrawTerrainPush, push)
 
 #if DAXA_SHADER_STAGE == DAXA_SHADER_STAGE_VERTEX
 
@@ -12,10 +12,10 @@ layout(location = 0) out vec2 v_uv;
 
 void main()
 {
-    TerrainVertex vert = deref_i(push.attachments.vertices, gl_VertexIndex);
+    Vertex vert = deref_i(push.attachments.vertices, gl_VertexIndex);
 
     gl_Position = vec4(vert.position, 1);
-    v_uv = vert.uv;
+    v_uv = vec2(vert.uv_1, vert.uv_2);
 }
 
 #elif DAXA_SHADER_STAGE == DAXA_SHADER_STAGE_TESSELATION_CONTROL

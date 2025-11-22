@@ -9,8 +9,7 @@
 #include "gpu_context.h"
 #include "camera.h"
 #include "renderer.h"
-#include "terrain/terrain_common.h"
-#include "terrain/generation/terrain_generation.inl"
+#include "common.h"
 #include "defaults.h"
 
 namespace sylva
