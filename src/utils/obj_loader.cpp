@@ -27,7 +27,8 @@ namespace sylva
         return out;
     }
 
-    std::optional<std::shared_ptr<std::vector<Vertex>>> load_obj_mesh(std::string const & file_path)
+    std::optional<std::shared_ptr<std::vector<Vertex>>>
+    load_obj_vertices(std::string const & file_path)
     {
         std::ifstream file{file_path};
 

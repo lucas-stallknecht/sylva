@@ -31,17 +31,17 @@ namespace sylva::defaults
 
     inline constexpr TerrainInfo terrain_info = {
         .patch_grid_size = 20,
-        .patch_width = 20.0f,
+        .patch_width = 1.0f,
     };
 
     inline constexpr TerrainGenerationParams terrain_generation_defaults = {
         .amplitude = 3.2f,
         .scale = 0.7f,
         .octaves = 12u,
-        .persistence = 0.35f,
+        .persistence = 0.385f,
         .lacunarity = 1.9f,
-        .slope_min = 0.42f,
-        .slope_max = 0.51f,
+        .slope_min = 0.39f,
+        .slope_max = 0.48f,
     };
 
     // grass

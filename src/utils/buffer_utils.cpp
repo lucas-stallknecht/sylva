@@ -26,8 +26,9 @@ namespace sylva
     // Currently, we create a new TaskGraph per upload which is inefficient
     // Instead, we should build it once and reuse it with parameterised data and buffers
     // Maybe with a uploader class located in the gpu_context ?
-    daxa::TaskBuffer create_and_upload_buffer(daxa::Device & device, daxa::BufferId buffer_id,
-                                              void const * data, daxa::usize size, std::string name)
+    UploadedBufferResult create_and_upload_buffer(daxa::Device & device, daxa::BufferId buffer_id,
+                                                  void const * data, daxa::usize size,
+                                                  std::string name)
     {
         daxa::TaskBuffer task_buffer({
             .initial_buffers = {.buffers = std::span{&buffer_id, 1}},
@@ -50,11 +51,11 @@ namespace sylva
         upload_tg.complete({});
         upload_tg.execute({});
 
-        return task_buffer;
+        return UploadedBufferResult{.buffer_id = buffer_id, .task_buffer = task_buffer};
     }
 
-    daxa::TaskBuffer create_and_upload_buffer(daxa::Device & device, void const * data,
-                                              daxa::BufferInfo const & buffer_info)
+    UploadedBufferResult create_and_upload_buffer(daxa::Device & device, void const * data,
+                                                  daxa::BufferInfo const & buffer_info)
     {
         auto buffer_id = device.create_buffer(buffer_info);
 

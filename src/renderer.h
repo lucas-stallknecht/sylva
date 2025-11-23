@@ -15,8 +15,8 @@ namespace sylva
     class Renderer
     {
       public:
-        Renderer(GPUContext & gpu_context, Camera const & camera,
-                 TerrainResources const & terrain_resources, daxa::ImGuiRenderer & gui);
+        Renderer(GPUContext & gpu_context, Camera const & camera, Scene const & scene,
+                 daxa::ImGuiRenderer & gui);
         Renderer(Renderer const &) = delete;
         Renderer(Renderer &&) = delete;
         Renderer & operator=(Renderer const &) = delete;
@@ -29,16 +29,16 @@ namespace sylva
         void compile_pipelines();
         void create_geometries();
         void create_global_resources();
-        void create_main_tg(Camera const & camera, TerrainResources const & terrain_resources,
-                            daxa::ImGuiRenderer & gui);
+        void create_main_tg(Camera const & camera, Scene const & scene, daxa::ImGuiRenderer & gui);
 
         GPUContext & ctx_;
         std::unordered_map<std::string, std::shared_ptr<daxa::RasterPipeline>> raster_pipelines_;
         daxa::TaskImage swapchain_image_;
         daxa::TaskImage depth_image_;
-        daxa::TaskBuffer cam_buffer_;
-        daxa::SamplerId linear_sampler_;
         daxa::TaskGraph main_tg_;
+        daxa::TaskBuffer cam_buffer_;
+        daxa::TaskBuffer vertex_buffer_;
+        daxa::SamplerId linear_sampler_;
         // TODO(lstallknecht): this should somewhat be out of the renderer class
         std::unordered_map<std::string, Geometry> geometries_;
     };

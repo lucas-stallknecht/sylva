@@ -23,6 +23,7 @@ namespace sylva
                       "src",
                   },
               .default_language = daxa::ShaderLanguage::GLSL,
+              .default_enable_debug_info = true,
           })}
     {
     }

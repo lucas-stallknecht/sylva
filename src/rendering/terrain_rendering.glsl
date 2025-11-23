@@ -12,7 +12,7 @@ layout(location = 0) out vec2 v_uv;
 
 void main()
 {
-    Vertex vert = deref_i(push.attachments.vertices, gl_VertexIndex);
+    Vertex vert = deref_i(push.vertex_buffer, gl_VertexIndex);
 
     gl_Position = vec4(vert.position, 1);
     v_uv = vec2(vert.uv_1, vert.uv_2);

@@ -26,7 +26,7 @@ namespace sylva
         compile_pipelines();
         create_terrain_generation_task_graph();
         create_grass_generation_task_graph();
-        renderer_ = std::make_unique<Renderer>(ctx_, camera_, terrain_resources_, gui_);
+        renderer_ = std::make_unique<Renderer>(ctx_, camera_, scene_, gui_);
         generate_terrain();
         generate_grass();
     };
@@ -36,12 +36,12 @@ namespace sylva
         ctx_.device.wait_idle();
         ctx_.device.collect_garbage();
         ImGui_ImplGlfw_Shutdown();
-        ctx_.device.destroy_image(terrain_resources_.height_map.get_state().images[0]);
-        ctx_.device.destroy_image(terrain_resources_.albedo_map.get_state().images[0]);
-        ctx_.device.destroy_image(terrain_resources_.normal_map.get_state().images[0]);
-        for (auto & chunk : *grass_chunks_)
+        ctx_.device.destroy_image(scene_.terrain_height_map.get_state().images[0]);
+        ctx_.device.destroy_image(scene_.terrain_albedo_map.get_state().images[0]);
+        ctx_.device.destroy_image(scene_.terrain_normal_map.get_state().images[0]);
+        for (auto & chunk : *scene_.grass_chunks)
         {
-            ctx_.device.destroy_buffer(chunk.blade_buffer.get_state().buffers[0]);
+            ctx_.device.destroy_buffer(chunk.blade_buffer_id);
         }
     }
 
@@ -90,15 +90,15 @@ namespace sylva
             .usage =
                 daxa::ImageUsageFlagBits::SHADER_STORAGE | daxa::ImageUsageFlagBits::SHADER_SAMPLED,
         });
-        terrain_resources_.height_map = daxa::TaskImage({
+        scene_.terrain_height_map = daxa::TaskImage({
             .initial_images = {.images = std::span{&terrain_height_map_id, 1}},
             .name = "task_terrain_height",
         });
-        terrain_resources_.albedo_map = daxa::TaskImage({
+        scene_.terrain_albedo_map = daxa::TaskImage({
             .initial_images = {.images = std::span{&terrain_albedo_id, 1}},
             .name = "task_terrain_albedo",
         });
-        terrain_resources_.normal_map = daxa::TaskImage({
+        scene_.terrain_normal_map = daxa::TaskImage({
             .initial_images = {.images = std::span{&terrain_normal_id, 1}},
             .name = "task_terrain_normal",
         });
@@ -107,15 +107,15 @@ namespace sylva
             .device = ctx_.device,
             .name = "terrain_generation_task_graph",
         });
-        terrain_gen_tg_.use_persistent_image(terrain_resources_.height_map);
-        terrain_gen_tg_.use_persistent_image(terrain_resources_.albedo_map);
-        terrain_gen_tg_.use_persistent_image(terrain_resources_.normal_map);
+        terrain_gen_tg_.use_persistent_image(scene_.terrain_height_map);
+        terrain_gen_tg_.use_persistent_image(scene_.terrain_albedo_map);
+        terrain_gen_tg_.use_persistent_image(scene_.terrain_normal_map);
         terrain_gen_tg_.add_task(
             daxa::HeadTask<GenerateTerrainH::Info>()
                 .head_views({
-                    .terrain_height_map = terrain_resources_.height_map.view(),
-                    .terrain_albedo_map = terrain_resources_.albedo_map.view(),
-                    .terrain_normal_map = terrain_resources_.normal_map.view(),
+                    .terrain_height_map = scene_.terrain_height_map.view(),
+                    .terrain_albedo_map = scene_.terrain_albedo_map.view(),
+                    .terrain_normal_map = scene_.terrain_normal_map.view(),
                 })
                 .executes(generate_terrain_callback, terrain_gen_pipeline_, &terrain_params_));
         terrain_gen_tg_.submit({});
@@ -126,8 +126,9 @@ namespace sylva
 
     void App::create_grass_generation_task_graph()
     {
+        // Params
         auto const params = defaults::grass_chunk_params;
-        grass_chunks_ = create_grass_chunks(params);
+        scene_.grass_chunks = create_grass_chunk_positions(params);
 
         float const blade_step = params.chunk_width / params.blade_density;
         auto const blades_per_side =
@@ -140,43 +141,41 @@ namespace sylva
         float const terrain_total_width =
             defaults::terrain_info.patch_width * defaults::terrain_info.patch_grid_size;
 
+        // Chunk buffers
+        std::vector<daxa::BufferId> buffer_ids;
+        buffer_ids.reserve(scene_.grass_chunks->size());
+        for (auto & chunk : *scene_.grass_chunks)
+        {
+            chunk.blade_buffer_id = ctx_.device.create_buffer(
+                {.size = blade_buffer_size, .name = "blade_buffer_" + std::to_string(chunk.seed)});
+            chunk.blade_count = blades_per_chunk;
+
+            buffer_ids.push_back(chunk.blade_buffer_id);
+        }
+        scene_.grass_blades_buffer = daxa::TaskBuffer({
+            .initial_buffers = {.buffers = std::span{buffer_ids}},
+            .name = "task_grass_blades_buffer",
+        });
+
         grass_gen_tg_ = daxa::TaskGraph({
             .device = ctx_.device,
             .name = "grass_generation_task_graph",
         });
-        grass_gen_tg_.use_persistent_image(terrain_resources_.height_map);
-        grass_gen_tg_.use_persistent_image(terrain_resources_.normal_map);
 
-        for (auto & chunk : *grass_chunks_)
-        {
-            daxa::BufferId chunk_blade_buffer =
-                ctx_.device.create_buffer({.size = blade_buffer_size});
-            std::string buffer_name = "task_blade_buffer_" + std::to_string(chunk.seed);
-
-            chunk.blade_buffer = daxa::TaskBuffer({
-                .initial_buffers = {.buffers = std::span{&chunk_blade_buffer, 1}},
-                .name = buffer_name,
-            });
-
-            GenerateGrassBladesPush chunk_push = {
-                .chunk_world_origin = std::bit_cast<daxa_f32vec3>(chunk.world_origin),
-                .chunk_seed = chunk.seed,
-                .blade_step = blade_step,
-                .blades_per_side = blades_per_side,
-                .terrain_total_width = terrain_total_width,
-                .attachments = {},
-            };
-
-            grass_gen_tg_.use_persistent_buffer(chunk.blade_buffer);
-            grass_gen_tg_.add_task(
-                daxa::HeadTask<GenerateGrassBladesH::Info>()
-                    .head_views({
-                        .terrain_height_map = terrain_resources_.height_map.view(),
-                        .terrain_normal_map = terrain_resources_.normal_map.view(),
-                        .blades = chunk.blade_buffer.view(),
-                    })
-                    .executes(generate_grass_callback, grass_gen_pipeline_, chunk_push));
-        }
+        grass_gen_tg_.use_persistent_image(scene_.terrain_height_map);
+        grass_gen_tg_.use_persistent_buffer(scene_.grass_blades_buffer);
+        grass_gen_tg_.add_task(daxa::HeadTask<GenerateGrassBladesH::Info>()
+                                   .head_views({
+                                       .terrain_height_map = scene_.terrain_height_map.view(),
+                                       .blades = scene_.grass_blades_buffer.view(),
+                                   })
+                                   .executes(generate_grass_callback, grass_gen_pipeline_,
+                                             GrassGenerationParams{
+                                                 .grass_chunks = scene_.grass_chunks,
+                                                 .blade_step = blade_step,
+                                                 .blades_per_side = blades_per_side,
+                                                 .terrain_total_width = terrain_total_width,
+                                             }));
         grass_gen_tg_.submit({});
         grass_gen_tg_.complete({});
     }
@@ -219,6 +218,7 @@ namespace sylva
         if (has_terrain_params_changed)
         {
             generate_terrain();
+            generate_grass();
         }
 
         ImGui::End();

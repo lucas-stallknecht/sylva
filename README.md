@@ -23,26 +23,23 @@ You can obtain it from [LunarG’s Vulkan SDK](https://vulkan.lunarg.com/).
 
 ### Grass & Foliage System
 
-**Geometry**
+**Grass blades**
 
 - [ ] Grass chunk generation
-- [ ] Clump distribution & density mapping
-- [ ] Per-blade geometry (shape, height/width variation)
-- [ ] Blade fullness: layered quads, curvature, and silhouette shaping
-
-**Shading & Animation**
-
+- [ ] Clump distribution
+- [ ] Per-blade geometry
+- [ ] Blade fullness transforms
 - [ ] Grass shading (Phong/glossy, color variation)
-- [ ] Wind simulation (gusts, turbulence, height-based motion)
 
-**Future Foliage**
+**Others**
 
 - [ ] Ground-cover foliage (moss, small plants)
-- [ ] (Optional) Additional foliage types (flowers, shrubs, leaves)
+- [ ] (Optional) Additional foliage types inside grass clumps
 
 ### Visual Effects & Interaction
 
 - [ ] Screen-space grass shadows
+- [ ] Wind simulation
 - [ ] Object–grass interaction
 - [ ] (Optional) translucency / subsurface scattering
 

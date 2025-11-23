@@ -25,3 +25,12 @@ vec2 random_gradient(ivec2 v)
     float angle = random_float(v) * 2.0 * PI;
     return vec2(cos(angle), sin(angle));
 }
+
+vec3 random_color(uint seed)
+{
+    float r = float(pcg_hash(seed * 0xA511E9B3u)) * (1.0 / 4294967295.0);
+    float g = float(pcg_hash(seed * 0x63D837CBu)) * (1.0 / 4294967295.0);
+    float b = float(pcg_hash(seed * 0xF1BBCDCBu)) * (1.0 / 4294967295.0);
+
+    return vec3(r, g, b);
+}

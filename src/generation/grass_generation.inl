@@ -6,7 +6,6 @@
 
 DAXA_DECL_COMPUTE_TASK_HEAD_BEGIN(GenerateGrassBladesH)
 DAXA_TH_IMAGE_ID(COMPUTE_SHADER::READ, REGULAR_2D, terrain_height_map)
-DAXA_TH_IMAGE_ID(COMPUTE_SHADER::READ, REGULAR_2D, terrain_normal_map)
 DAXA_TH_BUFFER_PTR(COMPUTE_SHADER::WRITE, daxa_BufferPtr(GrassBlade), blades)
 DAXA_DECL_TASK_HEAD_END
 
@@ -17,5 +16,6 @@ struct GenerateGrassBladesPush
     daxa_f32 blade_step;
     daxa_u32 blades_per_side;
     daxa_f32 terrain_total_width;
+    daxa_RWBufferPtr(GrassBlade) blade_buffer;
     DAXA_TH_BLOB(GenerateGrassBladesH, attachments)
 };

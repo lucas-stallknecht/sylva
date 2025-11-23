@@ -35,20 +35,20 @@ namespace sylva
         void generate_grass();
         void ui_update();
 
-        // TODO(lstallknecht): use unique_ptr to avoid capturing pointers when creating task_graphs
+        // TODO(lstallknecht): use smart pointers to avoid capturing pointers when creating
+        // task_graphs
         Window window_;
         GPUContext ctx_;
         Camera camera_;
+        Scene scene_;
         std::unique_ptr<Renderer> renderer_;
         daxa::ImGuiRenderer gui_;
 
         std::shared_ptr<daxa::ComputePipeline> terrain_gen_pipeline_;
         daxa::TaskGraph terrain_gen_tg_;
-        TerrainResources terrain_resources_;
         TerrainGenerationParams terrain_params_ = defaults::terrain_generation_defaults;
 
         std::shared_ptr<daxa::ComputePipeline> grass_gen_pipeline_;
         daxa::TaskGraph grass_gen_tg_;
-        std::shared_ptr<std::vector<GrassChunk>> grass_chunks_;
     };
 } // namespace sylva

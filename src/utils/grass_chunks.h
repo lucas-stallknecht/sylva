@@ -5,6 +5,8 @@
 #include <daxa/utils/task_graph_types.hpp>
 #include <glm/glm.hpp>
 
+#include "../common.h"
+
 namespace sylva
 {
 
@@ -13,13 +15,6 @@ namespace sylva
         std::size_t chunk_grid_size;
         float chunk_width;
         float blade_density;
-    };
-
-    struct GrassChunk
-    {
-        glm::vec3 world_origin;
-        daxa_u32 seed;
-        daxa::TaskBuffer blade_buffer;
     };
 
     inline daxa_u32 generate_chunk_seed(std::size_t i, std::size_t j)
@@ -33,7 +28,7 @@ namespace sylva
     }
 
     inline std::shared_ptr<std::vector<GrassChunk>>
-    create_grass_chunks(GrassChunkParams const & chunk_params)
+    create_grass_chunk_positions(GrassChunkParams const & chunk_params)
     {
         std::vector<GrassChunk> chunks;
         chunks.reserve(chunk_params.chunk_grid_size * chunk_params.chunk_grid_size);

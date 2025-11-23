@@ -2,24 +2,33 @@
 
 #extension GL_EXT_debug_printf : enable
 
-#include "grass_rendering.inl"
+#include "opaque.inl"
+#include "../shader_shared/random.glsl"
 
-DAXA_DECL_PUSH_CONSTANT(RenderGrassPush, push)
+DAXA_DECL_PUSH_CONSTANT(DrawGrassBladesPush, push)
 
-#if DAXA_SHADER_STAGE == DAXA_SHHADER_STAGE_VERTEX
+#if DAXA_SHADER_STAGE == DAXA_SHADER_STAGE_VERTEX
+
+layout(location = 1) out vec3 v_color;
 
 void main() {
-    Vertex vert = deref_i(push.attachments.vertices, gl_VertexIndex);
+    Vertex vert = deref_i(push.vertex_buffer, gl_VertexIndex);
+    GrassBlade blade = deref_i(push.blade_buffer, gl_InstanceIndex);
 
-    gl_Position = vec4(vert.position, 1);
+    vec4 worldPos = vec4(blade.position + vert.position, 1);
+
+    gl_Position = deref(push.attachments.camera).proj_view * worldPos;
+    v_color = random_color(push.chunk_seed);
+    // v_color = blade.color;
 }
 
-#elif DAXA_SHADER_STAGE == DAXA_SHHADER_STAGE_FRAGMENT
+#elif DAXA_SHADER_STAGE == DAXA_SHADER_STAGE_FRAGMENT
 
+layout(location = 1) in vec3 v_color;
 layout(location = 0) out vec4 out_color;
 
 void main() {
-    out_color = vec4(1.0);
+    out_color = vec4(v_color, 1.0);
 }
 
 #endif

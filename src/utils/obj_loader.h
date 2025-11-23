@@ -20,6 +20,6 @@ namespace sylva
 
     std::optional<FaceVertexTriplet> parse_face_triplet(std::string const & token);
     std::optional<std::shared_ptr<std::vector<Vertex>>>
-    load_obj_mesh(std::string const & file_path);
+    load_obj_vertices(std::string const & file_path);
 
 } // namespace sylva
