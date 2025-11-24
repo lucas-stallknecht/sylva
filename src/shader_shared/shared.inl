@@ -20,7 +20,10 @@ DAXA_DECL_BUFFER_PTR(Vertex)
 
 struct GrassBlade
 {
-    daxa_f32vec3 position;
+    daxa_f32vec3 c0;
+    daxa_f32 angle;
+    daxa_f32vec3 c1;
+    daxa_f32vec3 c2;
     daxa_f32vec3 color;
 };
 DAXA_DECL_BUFFER_PTR(GrassBlade)

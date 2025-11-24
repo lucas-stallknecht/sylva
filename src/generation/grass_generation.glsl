@@ -1,5 +1,7 @@
 #include <daxa/daxa.inl>
 
+#define PI 3.14159265
+
 #extension GL_EXT_debug_printf : enable
 
 #include "grass_generation.inl"
@@ -21,6 +23,7 @@ void main() {
 
     float world_x = push.chunk_world_origin.x + float(gx) * push.blade_step;
     float world_z = push.chunk_world_origin.z + float(gy) * push.blade_step;
+    vec2 offset = (value_noise2(vec2(world_x, world_z) / push.blade_step) - 0.5) * 3.8 * push.blade_step; // PARAM: max_position_offset
 
     // Convert world-space position to terrain UV (0..1)
     float half_width = 0.5 * push.terrain_total_width;
@@ -29,12 +32,10 @@ void main() {
                 (world_z + half_width) / push.terrain_total_width
             ), vec2(0.0), vec2(1.0));
 
-    // === Corrected texel coordinate calculation ===
+    // Sample height
     daxa_ImageViewId height_img = push.attachments.terrain_height_map;
     ivec2 img_size = imageSize(daxa_image2D(height_img));
     vec2 img_size_f = vec2(img_size);
-
-    // map uv to [0 .. size-1] instead of [0 .. size]
     ivec2 tex_coord = ivec2(
             clamp(floor(uv * (img_size_f - vec2(1.0))), vec2(0.0), img_size_f - vec2(1.0))
         );
@@ -43,12 +44,16 @@ void main() {
     float height = texel_val.r;
 
     GrassBlade blade;
-    blade.position = vec3(
-            world_x,
+    blade.c0 = vec3(
+            world_x + offset.x,
             height,
-            world_z
+            world_z + offset.y
         );
-    blade.color = vec3(uv, 0.0);
+    blade.c1 = blade.c0;
+    blade.c1.y += 0.3; // PARAM: height
+    blade.c2 = (blade.c0 + blade.c1) / 2.0;
+    blade.angle = value_noise(vec2(blade.c0.xz) / push.blade_step) * 2.0 * PI;
+    blade.color = vec3(0.1, 0.5, 0.2);
 
     deref_i(push.blade_buffer, idx) = blade;
 }

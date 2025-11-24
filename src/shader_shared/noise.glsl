@@ -20,6 +20,22 @@ float value_noise(vec2 p)
     return mix(nx0, nx1, s.y);
 }
 
+vec2 value_noise2(vec2 p) {
+    ivec2 i = ivec2(floor(p));
+    vec2 f = fract(p);
+
+    vec2 v00 = random_vec2(i);
+    vec2 v10 = random_vec2(i + ivec2(1, 0));
+    vec2 v01 = random_vec2(i + ivec2(0, 1));
+    vec2 v11 = random_vec2(i + ivec2(1, 1));
+
+    vec2 s = smoothstep(0.0, 1.0, f);
+
+    vec2 nx0 = mix(v00, v10, s.x);
+    vec2 nx1 = mix(v01, v11, s.x);
+    return mix(nx0, nx1, s.y);
+}
+
 float perlin_noise(vec2 p)
 {
     ivec2 pi = ivec2(floor(p));

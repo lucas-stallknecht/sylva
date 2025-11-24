@@ -5,10 +5,9 @@
 #include <vector>
 #include <memory>
 #include <string>
-
 #include <glm/glm.hpp>
 
-#include "../common.h"
+#include "../shader_shared/shared.inl"
 
 namespace sylva
 {

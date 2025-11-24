@@ -127,9 +127,9 @@ namespace sylva
                     auto const norm_idx = static_cast<std::size_t>(vertex_triplet->vn - 1);
 
                     vertices.push_back(Vertex{
-                        .position = temp_positions[pos_idx],
+                        .position = std::bit_cast<daxa_f32vec3>(temp_positions[pos_idx]),
                         .uv_1 = temp_uvs[uv_idx].x,
-                        .normal = temp_normals[norm_idx],
+                        .normal = std::bit_cast<daxa_f32vec3>(temp_normals[norm_idx]),
                         .uv_2 = temp_uvs[uv_idx].y,
                     });
                 }

@@ -25,7 +25,7 @@ You can obtain it from [LunarG’s Vulkan SDK](https://vulkan.lunarg.com/).
 
 **Grass blades**
 
-- [ ] Grass chunk generation
+- [x] Grass chunk generation
 - [ ] Clump distribution
 - [ ] Per-blade geometry
 - [ ] Blade fullness transforms

@@ -6,14 +6,6 @@
 namespace sylva
 {
 
-    struct Vertex
-    {
-        glm::vec3 position{};
-        float uv_1{};
-        glm::vec3 normal{};
-        float uv_2{};
-    };
-
     struct Geometry
     {
         daxa::BufferId vertex_buffer_id;
