@@ -10,22 +10,41 @@
 
 DAXA_DECL_PUSH_CONSTANT(DrawGrassBladesPush, push)
 
+#define K 36.0
+#define BLADE_WIDTH 0.7
+#define FULLNESS_SCALE 0.3
+
 #if DAXA_SHADER_STAGE == DAXA_SHADER_STAGE_VERTEX
 
 layout(location = 1) out vec3 v_color;
 
+float displace_view_space_mag(float n_dot_v, float k) {
+    return sign(n_dot_v) * exp(-k * n_dot_v * n_dot_v);
+}
+
 void main() {
     Vertex vert = deref_i(push.vertex_buffer, gl_VertexIndex);
     GrassBlade blade = deref_i(push.blade_buffer, gl_InstanceIndex);
+    CamInfo camera = deref(push.attachments.camera);
 
-    vec3 bezierPos = bezier(vert.position.y, blade.c0, blade.c1, blade.c2);
-    vec3 facingDirection = vec3(cos(blade.angle), 0.0, sin(blade.angle));
-    vec3 tangent = normalize(cross(-facingDirection, UP));
+    vec3 bezier_pos = bezier(vert.position.y, blade.c0, blade.c1, blade.c2);
+    vec3 blade_normal = vec3(cos(blade.angle), 0.0, sin(blade.angle)); // normal
+    vec3 tangent = normalize(cross(-blade_normal, UP));
 
-    vec4 worldPos = vec4(bezierPos, 1);
-    worldPos.xyz += vert.position.z * tangent * 0.7; // PARAM: width
+    vec4 world_pos = vec4(bezier_pos, 1);
+    world_pos.xyz += vert.position.z * tangent * BLADE_WIDTH;
 
-    gl_Position = deref(push.attachments.camera).proj_view * worldPos;
+    vec3 view_dir = normalize(camera.position.xyz - world_pos.xyz);
+    float n_dot_v = dot(blade_normal, view_dir);
+
+    vec4 view_pos = camera.view * world_pos;
+    vec3 view_tangent = normalize((camera.view * vec4(tangent, 0.0)).xyz);
+    // TODO(lstallknecht): replace fixed vector by normal or other direction
+    view_pos.xyz += vec3(1.0, 0.0, 0.0) * displace_view_space_mag(n_dot_v, 36.0) * vert.position.z * FULLNESS_SCALE * BLADE_WIDTH;
+
+    vec4 clip_pos = camera.proj * view_pos;
+
+    gl_Position = clip_pos;
     // v_color = random_color(push.chunk_seed);
     // v_color = blade.color;
     v_color = mix(vec3(0.13, 0.26, 0.06), vec3(0.41, 0.61, 0.22), vert.position.y);

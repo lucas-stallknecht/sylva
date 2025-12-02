@@ -155,13 +155,15 @@ namespace sylva
                     {
                         daxa::usize size = sizeof(CamInfo);
                         auto surface_extent = ctx_.swapchain.get_surface_extent();
-                        auto proj_view =
-                            camera_ptr->get_proj_view(static_cast<float>(surface_extent.x) /
-                                                      static_cast<float>(surface_extent.y));
+                        auto proj = camera_ptr->get_proj(static_cast<float>(surface_extent.x) /
+                                                         static_cast<float>(surface_extent.y));
+                        auto view = camera_ptr->get_view();
 
                         CamInfo cam_info{};
                         cam_info.position = std::bit_cast<daxa_f32vec3>(camera_ptr->get_position());
-                        cam_info.proj_view = std::bit_cast<daxa_f32mat4x4>(proj_view);
+                        cam_info.proj = std::bit_cast<daxa_f32mat4x4>(proj);
+                        cam_info.view = std::bit_cast<daxa_f32mat4x4>(view);
+                        cam_info.proj_view = std::bit_cast<daxa_f32mat4x4>(proj * view);
 
                         upload_buffer(ti, cam_buffer_.get_state().buffers[0], &cam_info, size);
                     }));

@@ -53,14 +53,15 @@ namespace sylva
         up_ = glm::normalize(glm::cross(right_, forward_));
     }
 
-    glm::mat4 Camera::get_proj_view(float aspect_ratio) const
+    glm::mat4 Camera::get_proj(float aspect_ratio) const
     {
         glm::mat4 proj = glm::perspective(glm::radians(fov), aspect_ratio, near_plane, far_plane);
         proj[1][1] *= -1.0f; // Flip Y for Vulkan clip space
 
-        glm::mat4 view = glm::lookAt(position_, position_ + forward_, up_);
-        return proj * view;
+        return proj;
     }
+
+    glm::mat4 Camera::get_view() const { return glm::lookAt(position_, position_ + forward_, up_); }
 
     glm::vec3 Camera::get_position() const { return position_; }
 } // namespace sylva

@@ -23,7 +23,7 @@ void main() {
 
     float world_x = push.chunk_world_origin.x + float(gx) * push.blade_step;
     float world_z = push.chunk_world_origin.z + float(gy) * push.blade_step;
-    vec2 offset = (value_noise2(vec2(world_x, world_z) / push.blade_step) - 0.5) * 3.8 * push.blade_step; // PARAM: max_position_offset
+    vec2 offset = (value_noise2(vec2(world_x, world_z) / push.blade_step) - 0.5) * 2.0 * push.blade_step; // PARAM: max_position_offset
 
     // Convert world-space position to terrain UV (0..1)
     float half_width = 0.5 * push.terrain_total_width;
