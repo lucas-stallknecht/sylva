@@ -12,6 +12,10 @@ DAXA_DECL_PUSH_CONSTANT(GenerateGrassBladesPush, push)
 
 #if DAXA_SHADER_STAGE == DAXA_SHADER_STAGE_COMPUTE
 
+// PARAM: height
+#define BLADE_HEIGHT 0.3
+#define BLADE_TIP_DISP_FACTOR 0.1
+
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 void main() {
@@ -49,10 +53,17 @@ void main() {
             height,
             world_z + offset.y
         );
-    blade.c1 = blade.c0;
-    blade.c1.y += 0.3; // PARAM: height
-    blade.c2 = (blade.c0 + blade.c1) / 2.0;
-    blade.angle = value_noise(vec2(blade.c0.xz) / push.blade_step) * 2.0 * PI;
+
+    float angle = value_noise(vec2(blade.c0.xz) / push.blade_step) * 2.0 * PI;
+    blade.angle = angle;
+
+    vec3 blade_normal = vec3(cos(angle), 0.0, sin(angle));
+
+    vec3 tip = blade.c0 + vec3(0.0, BLADE_HEIGHT, 0.0);
+    tip += blade_normal * BLADE_TIP_DISP_FACTOR;
+
+    blade.c1 = tip;
+    blade.c2 = mix(blade.c0, tip, 0.5) - blade_normal * BLADE_TIP_DISP_FACTOR * 0.5;
     blade.color = vec3(0.1, 0.5, 0.2);
 
     deref_i(push.blade_buffer, idx) = blade;
